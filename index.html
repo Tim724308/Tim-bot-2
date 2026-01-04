@@ -3,48 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tim Clicker - Улучшенная версия</title>
-    <script src="https://unpkg.com/vue@3"></script>
+    <title>Tim Clicker - Play-to-Earn</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
             --tim-blue: #00C8FF;
-            --tim-blue-hover: #0095FF;
-            --tim-blue-shadow: #007ACC;
             --dark-bg: #111;
-            --dark-bg-light: #222;
-            --dark-bg-lighter: #333;
-            --text-light: #ccc;
+            --dark-light: #222;
             --text-white: #fff;
+            --text-light: #ccc;
+            --success: #66bb6a;
+            --error: #ff6b6b;
+            --premium: #ffd700;
+            --crypto: #8B5CF6;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body {
-            font-family: 'Arial', sans-serif;
+            font-family: Arial, sans-serif;
             background: var(--dark-bg);
             color: var(--text-white);
-            margin: 0;
-            padding: 0;
             text-align: center;
-            background-image: radial-gradient(circle at center, var(--dark-bg-light) 0%, var(--dark-bg) 100%);
-            overflow-x: hidden;
-            transition: all 0.3s ease;
+            padding: 20px 20px 80px 20px;
             min-height: 100vh;
-            user-select: none;
+            position: relative;
         }
-
-        /* Loading Screen */
-        .loading-screen {
+        
+        .loading {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             background: var(--dark-bg);
             display: flex;
             flex-direction: column;
@@ -52,1647 +42,1525 @@
             justify-content: center;
             z-index: 1000;
         }
-
-        .loading-spinner {
+        
+        .spinner {
+            width: 50px; height: 50px;
+            border: 5px solid var(--dark-light);
+            border-top: 5px solid var(--tim-blue);
+            border-radius: 50%;
+        }
+        
+        .btn {
+            background: var(--tim-blue);
+            color: var(--dark-bg);
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 20px 0;
+            width: 100%;
+            max-width: 300px;
+        }
+        
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        .btn-premium {
+            background: linear-gradient(45deg, var(--premium), #ff9800);
+            color: black;
+        }
+        
+        .btn-crypto {
+            background: linear-gradient(45deg, var(--crypto), #6366F1);
+            color: white;
+        }
+        
+        .btn-back {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.1);
+            color: var(--text-white);
+            border: 1px solid var(--tim-blue);
+            border-radius: 50%;
             width: 40px;
             height: 40px;
-            border: 4px solid var(--dark-bg-lighter);
-            border-top: 4px solid var(--tim-blue);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 20px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* Start Screen */
-        .start-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.95);
-            z-index: 200;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            animation: fadeIn 1s ease;
-            padding: 20px;
-        }
-
-        .start-screen h1 {
-            font-size: 3.5rem;
-            margin: 20px 0;
-            color: var(--tim-blue);
-            text-shadow: 0 0 20px rgba(0, 200, 255, 0.5);
-            font-weight: bold;
-        }
-
-        .start-screen p {
-            font-size: 1.3rem;
-            margin-bottom: 40px;
-            max-width: 500px;
-            line-height: 1.6;
-            color: var(--text-light);
-        }
-
-        .start-button {
-            font-size: 1.8rem;
-            padding: 20px 40px;
-            background: linear-gradient(135deg, var(--tim-blue), var(--tim-blue-hover));
-            border: none;
-            color: var(--dark-bg);
-            border-radius: 15px;
             cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s ease;
-            box-shadow: 0 6px 0 var(--tim-blue-shadow);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .start-button:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 30px rgba(0, 200, 255, 0.6);
-        }
-
-        .start-button:active {
-            transform: translateY(3px);
-            box-shadow: 0 3px 0 var(--tim-blue-shadow);
-        }
-
-        /* Game Interface */
-        .game-interface {
-            padding: 20px;
-            max-width: 600px;
-            margin: 0 auto;
-            min-height: 100vh;
-        }
-
-        .logo-container {
-            margin: 20px auto;
-            animation: logoFloat 3s ease-in-out infinite;
-        }
-
-        @keyframes logoFloat {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-        }
-
-        .logo {
-            width: 100px;
-            height: 100px;
-            background: linear-gradient(135deg, var(--tim-blue), var(--tim-blue-hover));
-            border-radius: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2rem;
-            font-weight: bold;
-            color: var(--text-white);
-            filter: drop-shadow(0 0 15px rgba(0, 200, 255, 0.7));
-            transition: transform 0.3s ease;
-            margin: 0 auto;
-        }
-
-        .logo:hover {
-            transform: scale(1.1) rotate(5deg);
-        }
-
-        /* Stats Display */
-        .coin-display {
-            font-size: 3.5rem;
-            margin: 20px 0;
-            color: var(--tim-blue);
-            font-weight: bold;
-            text-shadow: 0 0 15px rgba(0, 200, 255, 0.5);
-            transition: all 0.3s ease;
-            animation: coinPulse 2s ease-in-out infinite;
-        }
-
-        @keyframes coinPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-
-        .stats {
-            display: flex;
-            justify-content: space-around;
-            margin: 30px auto;
-            max-width: 500px;
-            gap: 20px;
-        }
-
-        .stat-item {
-            background: rgba(40, 40, 40, 0.9);
-            padding: 15px;
-            border-radius: 12px;
-            min-width: 140px;
-            border: 2px solid rgba(0, 200, 255, 0.3);
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-        }
-
-        .stat-item:hover {
-            transform: scale(1.05);
-            border-color: var(--tim-blue);
-            box-shadow: 0 0 20px rgba(0, 200, 255, 0.3);
-        }
-
-        .stat-label {
-            font-size: 0.9rem;
-            color: var(--text-light);
-            margin-bottom: 5px;
-        }
-
-        .stat-value {
-            color: var(--tim-blue);
-            font-weight: bold;
-            font-size: 1.3rem;
-        }
-
-        /* Click Area */
-        .click-area {
-            background: linear-gradient(135deg, rgba(20, 20, 20, 0.9), rgba(40, 40, 40, 0.9));
-            border-radius: 50%;
-            width: 250px;
-            height: 250px;
-            margin: 40px auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            border: 6px solid var(--tim-blue);
-            box-shadow: 
-                0 0 30px rgba(0, 200, 255, 0.4),
-                inset 0 0 30px rgba(0, 200, 255, 0.1);
-            transition: all 0.1s ease;
-            position: relative;
-            overflow: hidden;
-            backdrop-filter: blur(20px);
-        }
-
-        .click-area:hover {
-            box-shadow: 
-                0 0 40px rgba(0, 200, 255, 0.6),
-                inset 0 0 40px rgba(0, 200, 255, 0.2);
-        }
-
-        .click-area:active {
-            transform: scale(0.95);
-            box-shadow: 
-                0 0 20px rgba(0, 200, 255, 0.8),
-                inset 0 0 50px rgba(0, 200, 255, 0.3);
-        }
-
-        .click-logo {
-            width: 120px;
-            height: 120px;
-            background: linear-gradient(135deg, var(--tim-blue), var(--tim-blue-hover));
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: var(--text-white);
-            filter: drop-shadow(0 0 15px rgba(0, 200, 255, 0.7));
-            transition: all 0.1s ease;
-        }
-
-        .click-effect {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle, rgba(0,200,255,0.5) 0%, transparent 70%);
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.2s ease;
-            border-radius: 50%;
-        }
-
-        /* Particles and Effects */
-        .particle {
-            position: absolute;
-            background-color: var(--tim-blue);
-            border-radius: 50%;
-            width: 10px;
-            height: 10px;
-            pointer-events: none;
+            font-size: 20px;
             z-index: 100;
-            animation: particleFloat 1.5s ease-out forwards;
-            box-shadow: 0 0 10px var(--tim-blue);
         }
-
-        @keyframes particleFloat {
-            0% {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-            100% {
-                opacity: 0;
-                transform: translateY(-80px) scale(0.3);
-            }
+        
+        .btn-back:hover {
+            background: rgba(255,255,255,0.2);
         }
-
-        .critical-hit {
-            position: absolute;
-            font-size: 2rem;
-            color: #ff6b6b;
-            font-weight: bold;
-            text-shadow: 
-                0 0 10px #ff6b6b,
-                0 0 20px #ff6b6b,
-                0 0 30px #ff6b6b;
-            animation: criticalFloat 1.5s ease-out forwards;
-            pointer-events: none;
-            z-index: 150;
-        }
-
-        @keyframes criticalFloat {
-            0% { 
-                opacity: 1; 
-                transform: translateY(0) scale(1); 
-            }
-            100% { 
-                opacity: 0; 
-                transform: translateY(-100px) scale(1.5); 
-            }
-        }
-
-        .lightning {
-            position: fixed;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            background: linear-gradient(transparent 40%, rgba(255, 255, 255, 0.9) 50%, transparent 60%);
-            opacity: 0;
-            pointer-events: none;
-            z-index: 300;
-            animation: lightningFlash 0.3s ease-out;
-        }
-
-        @keyframes lightningFlash {
-            0%, 100% { opacity: 0; }
-            50% { opacity: 1; }
-        }
-
-        .gold-rain {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 50;
-            overflow: hidden;
-        }
-
-        .gold-coin {
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            background: linear-gradient(45deg, #ffd700, #ffed4e);
-            border-radius: 50%;
-            animation: coinFall 3s linear forwards;
-            box-shadow: 0 0 10px #ffd700;
-        }
-
-        @keyframes coinFall {
-            0% {
-                transform: translateY(-100px) rotate(0deg);
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(calc(100vh + 100px)) rotate(360deg);
-                opacity: 0;
-            }
-        }
-
-        .shake {
-            animation: shake 0.6s ease-in-out;
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            10%, 30%, 50%, 70%, 90% { transform: translateX(-8px); }
-            20%, 40%, 60%, 80% { transform: translateX(8px); }
-        }
-
-        /* Tab System */
-        .tab-system {
-            margin-top: 40px;
-        }
-
-        .tab-container {
-            display: flex;
-            justify-content: center;
-            margin: 30px 0;
-            flex-wrap: wrap;
-            gap: 8px;
-            padding: 0 20px;
-        }
-
-        .tab {
-            padding: 12px 18px;
-            background: rgba(40, 40, 40, 0.8);
-            border: 2px solid transparent;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 0.95rem;
-            font-weight: 500;
-            min-width: 90px;
-            text-align: center;
-            backdrop-filter: blur(10px);
-        }
-
-        .tab:hover {
-            background: rgba(60, 60, 60, 0.9);
-            border-color: rgba(0, 200, 255, 0.5);
-            transform: translateY(-2px);
-        }
-
-        .tab.active {
-            background: linear-gradient(135deg, var(--tim-blue), var(--tim-blue-hover));
-            color: var(--dark-bg);
-            font-weight: bold;
-            border-color: var(--tim-blue);
-            box-shadow: 0 0 20px rgba(0, 200, 255, 0.4);
-        }
-
-        .tab-content {
-            display: none;
-            animation: fadeInUp 0.5s ease;
-            padding: 30px 20px;
-            max-width: 550px;
+        
+        .game-interface {
+            max-width: 500px;
             margin: 0 auto;
         }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        @keyframes fadeInUp {
-            from { 
-                opacity: 0; 
-                transform: translateY(20px); 
-            }
-            to { 
-                opacity: 1; 
-                transform: translateY(0); 
-            }
-        }
-
-        /* Buttons */
-        .game-button {
-            background: linear-gradient(135deg, var(--tim-blue), var(--tim-blue-hover));
-            border: none;
-            color: var(--dark-bg);
-            padding: 15px 25px;
-            border-radius: 10px;
-            margin: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            width: 100%;
-            max-width: 400px;
-            display: block;
-            font-size: 1rem;
-            box-shadow: 0 4px 0 var(--tim-blue-shadow);
-            transition: all 0.2s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .game-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 0 var(--tim-blue-shadow);
-        }
-
-        .game-button:active {
-            transform: translateY(2px);
-            box-shadow: 0 2px 0 var(--tim-blue-shadow);
-        }
-
-        .game-button:disabled {
-            background: rgba(60, 60, 60, 0.5);
-            color: var(--text-light);
-            box-shadow: none;
-            transform: none;
-            cursor: not-allowed;
-        }
-
-        .game-button::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-            transition: left 0.5s ease;
-        }
-
-        .game-button:hover::before {
-            left: 100%;
-        }
-
-        /* Item Cards */
-        .item-card {
-            background: rgba(40, 40, 40, 0.9);
-            padding: 20px;
-            border-radius: 12px;
-            border-left: 4px solid var(--tim-blue);
-            margin: 15px 0;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(0, 200, 255, 0.2);
-        }
-
-        .item-card:hover {
-            transform: scale(1.02);
-            border-color: var(--tim-blue);
-            box-shadow: 0 8px 25px rgba(0, 200, 255, 0.2);
-        }
-
-        .item-header {
+        
+        /* Компактный блок статистики */
+        .top-stats {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .item-title {
-            color: var(--tim-blue);
-            font-size: 1.2rem;
-            font-weight: bold;
-            margin: 0;
-        }
-
-        .item-level {
-            background: rgba(0, 200, 255, 0.2);
-            color: var(--tim-blue);
-            padding: 4px 8px;
+            margin-bottom: 20px;
+            padding: 10px 15px;
+            background: var(--dark-light);
             border-radius: 15px;
-            font-size: 0.8rem;
-            font-weight: bold;
+            border: 2px solid var(--tim-blue);
         }
-
-        .item-description {
+        
+        .tim-balance {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .tim-amount {
+            font-size: 22px;
+            font-weight: bold;
+            color: var(--tim-blue);
+            line-height: 1;
+        }
+        
+        .tim-label {
+            font-size: 10px;
             color: var(--text-light);
-            margin: 10px 0;
-            line-height: 1.4;
+            margin-top: 2px;
         }
-
-        .item-cost {
-            color: var(--text-white);
+        
+        .click-stats {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .click-stat {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 13px;
+        }
+        
+        .click-stat-value {
+            color: var(--tim-blue);
             font-weight: bold;
+        }
+        
+        .stars-stat {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+        
+        .stars-amount {
+            font-size: 22px;
+            font-weight: bold;
+            color: var(--premium);
+            line-height: 1;
+        }
+        
+        .stars-label {
+            font-size: 10px;
+            color: var(--text-light);
+            margin-top: 2px;
+        }
+        
+        .click-area {
+            width: 200px; height: 200px;
+            background: var(--dark-light);
+            border-radius: 50%;
+            margin: 30px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            border: 4px solid var(--tim-blue);
+            user-select: none;
+            transition: transform 0.1s;
+        }
+        
+        .click-area:active {
+            transform: scale(0.95);
+        }
+        
+        .bottom-tabs {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--dark-bg);
+            padding: 10px;
+            border-top: 1px solid var(--dark-light);
+            display: flex;
+            justify-content: space-around;
+            z-index: 100;
+        }
+        
+        .bottom-tab {
+            padding: 12px 5px;
+            background: var(--dark-light);
+            border-radius: 8px;
+            cursor: pointer;
+            flex: 1;
+            margin: 0 3px;
+            text-align: center;
+            min-width: 0;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        
+        .bottom-tab:hover {
+            transform: translateY(-2px);
+        }
+        
+        .bottom-tab.active {
+            background: var(--tim-blue);
+            color: var(--dark-bg);
+            font-weight: bold;
+            box-shadow: 0 0 15px rgba(0, 200, 255, 0.5);
+        }
+        
+        .tab-label {
+            display: none;
+        }
+        
+        .grid-layout {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .grid-card {
+            background: var(--dark-light);
+            padding: 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            border: 2px solid var(--tim-blue);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 120px;
+            transition: transform 0.2s;
+        }
+        
+        .grid-card:hover {
+            transform: scale(1.05);
+        }
+        
+        .grid-card .card-title {
+            color: var(--tim-blue);
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+        }
+        
+        .grid-card .card-desc {
+            color: var(--text-light);
+            font-size: 12px;
+            line-height: 1.3;
+        }
+        
+        .card {
+            background: var(--dark-light);
+            padding: 15px;
             margin: 10px 0;
+            border-radius: 10px;
+            border-left: 4px solid var(--tim-blue);
+            text-align: left;
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+        
+        .card-title {
+            color: var(--tim-blue);
+            font-weight: bold;
             font-size: 1.1rem;
         }
-
-        /* Boost Timer */
-        .boost-timer {
-            background: rgba(0, 200, 255, 0.1);
-            color: var(--tim-blue);
-            padding: 8px 12px;
-            border-radius: 8px;
-            margin-top: 10px;
-            font-weight: bold;
-            border: 1px solid rgba(0, 200, 255, 0.3);
-        }
-
-        /* Input Fields */
-        .game-input {
-            width: 100%;
-            padding: 12px 15px;
-            background: rgba(40, 40, 40, 0.8);
+        
+        .card-cost {
             color: var(--text-white);
-            border: 2px solid rgba(0, 200, 255, 0.3);
-            border-radius: 8px;
-            margin: 10px 0;
-            transition: all 0.3s ease;
-            font-size: 1rem;
-            backdrop-filter: blur(10px);
+            font-weight: bold;
+            background: rgba(0,0,0,0.3);
+            padding: 5px 10px;
+            border-radius: 5px;
         }
-
-        .game-input:focus {
-            border-color: var(--tim-blue);
-            box-shadow: 0 0 15px rgba(0, 200, 255, 0.3);
-            outline: none;
-        }
-
-        .game-input::placeholder {
+        
+        .card-desc {
             color: var(--text-light);
+            font-size: 14px;
+            margin-bottom: 10px;
+            line-height: 1.4;
         }
-
-        /* Wallet Display */
-        .wallet-display {
-            background: rgba(40, 40, 40, 0.9);
+        
+        .input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid var(--tim-blue);
+            border-radius: 8px;
+            color: white;
+            margin: 10px 0;
+            font-size: 16px;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 25px;
+            border-radius: 10px;
+            z-index: 1001;
+            font-weight: bold;
+            max-width: 90%;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(-50%) translateY(-100%); }
+            to { transform: translateX(-50%) translateY(0); }
+        }
+        
+        .notification.success { background: var(--success); }
+        .notification.error { background: var(--error); }
+        .notification.premium { background: var(--premium); color: black; }
+        .notification.crypto { background: var(--crypto); color: white; }
+        
+        .friend-card {
+            background: var(--dark-light);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            border-left: 4px solid var(--success);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .friend-info {
+            text-align: left;
+            flex: 1;
+        }
+        
+        .friend-name {
+            font-weight: bold;
+            color: var(--text-white);
+            margin-bottom: 5px;
+        }
+        
+        .friend-bonus {
+            color: var(--success);
+            font-size: 14px;
+        }
+        
+        .friend-btn {
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .referral-link {
+            background: rgba(255,255,255,0.1);
+            padding: 12px;
+            border-radius: 8px;
+            font-family: monospace;
+            word-break: break-all;
+            margin: 10px 0;
+            cursor: pointer;
+        }
+        
+        .wallet-address {
+            font-family: monospace;
+            background: rgba(255,255,255,0.05);
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            word-break: break-all;
+            cursor: pointer;
+        }
+        
+        .page {
+            display: none;
+        }
+        
+        .page.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .token-info {
+            background: var(--dark-light);
             padding: 15px;
             border-radius: 10px;
-            margin: 15px auto;
-            max-width: 400px;
-            word-break: break-all;
-            font-family: 'Courier New', monospace;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 2px solid rgba(0, 200, 255, 0.3);
-            backdrop-filter: blur(10px);
+            margin: 10px 0;
+            text-align: center;
+            border: 2px solid var(--tim-blue);
         }
-
-        .wallet-display:hover {
-            background: rgba(60, 60, 60, 0.9);
-            border-color: var(--tim-blue);
-            box-shadow: 0 0 20px rgba(0, 200, 255, 0.2);
+        
+        .token-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: var(--tim-blue);
+            margin: 10px 0;
         }
-
-        /* Modal */
-        .modal {
-            display: none;
+        
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+            gap: 15px;
+        }
+        
+        .page-title {
+            font-size: 1.8rem;
+            color: var(--tim-blue);
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .fullscreen-page {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.9);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-            backdrop-filter: blur(5px);
+            right: 0;
+            bottom: 0;
+            background: var(--dark-bg);
+            z-index: 200;
+            padding: 20px;
+            overflow-y: auto;
+            display: none;
         }
-
-        .modal.active {
-            display: flex;
+        
+        .fullscreen-page.active {
+            display: block;
+            animation: slideUp 0.3s ease;
         }
-
-        .modal-content {
-            background: rgba(30, 30, 30, 0.95);
-            padding: 30px;
-            border-radius: 15px;
-            max-width: 450px;
-            width: 90%;
-            border: 2px solid var(--tim-blue);
-            animation: modalSlideIn 0.3s ease;
-            backdrop-filter: blur(20px);
-            box-shadow: 0 0 50px rgba(0, 200, 255, 0.3);
+        
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
         }
-
-        @keyframes modalSlideIn {
-            from { 
-                opacity: 0; 
-                transform: translateY(-50px) scale(0.9); 
-            }
-            to { 
-                opacity: 1; 
-                transform: translateY(0) scale(1); 
-            }
+        
+        .fullscreen-content {
+            max-width: 500px;
+            margin: 0 auto;
+            padding-top: 60px;
         }
-
-        .close-modal {
-            float: right;
-            cursor: pointer;
-            font-size: 2rem;
-            transition: all 0.3s ease;
-            color: var(--text-light);
-            line-height: 1;
+        
+        .mrt-badge {
+            background: linear-gradient(45deg, #8B5CF6, #6366F1);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 5px;
         }
-
-        .close-modal:hover {
-            color: var(--tim-blue);
-            transform: scale(1.2);
+        
+        /* Улучшенный компактный дизайн для Telegram Stars */
+        .stars-section {
+            background: var(--dark-light);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            border: 2px solid var(--premium);
         }
-
-        .modal h2 {
-            color: var(--tim-blue);
+        
+        .stars-balance {
+            text-align: center;
             margin-bottom: 20px;
+        }
+        
+        .balance-amount {
+            font-size: 32px;
+            font-weight: bold;
+            color: var(--premium);
+            margin: 10px 0;
+        }
+        
+        .balance-label {
+            color: var(--text-light);
+            font-size: 14px;
+        }
+        
+        /* Компактные пакеты звезд */
+        .stars-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .stars-package {
+            background: rgba(255, 215, 0, 0.1);
+            border: 1px solid var(--premium);
+            border-radius: 8px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
             text-align: center;
         }
-
-        /* Special Effects */
-        .energy-ring {
-            position: absolute;
-            border: 2px solid var(--tim-blue);
-            border-radius: 50%;
-            animation: energyPulse 2s ease-in-out infinite;
+        
+        .stars-package:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 215, 0, 0.15);
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.1);
         }
-
-        @keyframes energyPulse {
-            0%, 100% {
-                transform: scale(1);
+        
+        .stars-icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        
+        .stars-count {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--premium);
+        }
+        
+        /* Компактные пакеты TIM */
+        .tim-packages {
+            margin-top: 20px;
+        }
+        
+        .tim-package {
+            background: rgba(0, 200, 255, 0.1);
+            border: 1px solid var(--tim-blue);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .tim-package:hover {
+            transform: translateY(-2px);
+            background: rgba(0, 200, 255, 0.15);
+            box-shadow: 0 5px 15px rgba(0, 200, 255, 0.1);
+        }
+        
+        .package-left {
+            text-align: left;
+        }
+        
+        .package-cost {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--premium);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .package-reward {
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--tim-blue);
+        }
+        
+        .package-benefit {
+            font-size: 12px;
+            color: var(--text-light);
+            margin-top: 2px;
+        }
+        
+        .package-right {
+            text-align: right;
+        }
+        
+        .buy-btn {
+            background: var(--premium);
+            color: black;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .buy-btn:hover {
+            opacity: 0.9;
+        }
+        
+        .buy-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .section-title {
+            color: var(--tim-blue);
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        /* Стили для крипто-майнера */
+        .crypto-card {
+            background: rgba(139, 92, 246, 0.1);
+            border: 2px solid var(--crypto);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .crypto-card::before {
+            content: "💰";
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 20px;
+        }
+        
+        .chance-display {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-top: 5px;
+            color: var(--crypto);
+            font-weight: bold;
+        }
+        
+        .crypto-effect {
+            position: fixed;
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--crypto);
+            z-index: 1002;
+            pointer-events: none;
+            animation: cryptoFloat 2s ease-out forwards;
+        }
+        
+        @keyframes cryptoFloat {
+            0% {
+                transform: translateY(0) scale(1);
                 opacity: 1;
             }
             50% {
-                transform: scale(1.2);
-                opacity: 0.5;
+                transform: translateY(-50px) scale(1.2);
+                opacity: 0.8;
             }
-        }
-
-        /* Responsive Design */
-        @media (max-width: 640px) {
-            .coin-display {
-                font-size: 2.8rem;
-            }
-            
-            .click-area {
-                width: 200px;
-                height: 200px;
-            }
-            
-            .click-logo {
-                width: 100px;
-                height: 100px;
-                font-size: 2rem;
-            }
-            
-            .stats {
-                flex-direction: column;
-                gap: 10px;
-                max-width: 250px;
-            }
-            
-            .tab-container {
-                gap: 4px;
-                padding: 0 10px;
-            }
-            
-            .tab {
-                padding: 10px 12px;
-                font-size: 0.85rem;
-                min-width: 70px;
-            }
-            
-            .item-card {
-                padding: 15px;
-            }
-            
-            .tab-content {
-                padding: 20px 15px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .start-screen h1 {
-                font-size: 2.8rem;
-            }
-            
-            .start-screen p {
-                font-size: 1.1rem;
-            }
-            
-            .coin-display {
-                font-size: 2.4rem;
-            }
-            
-            .click-area {
-                width: 180px;
-                height: 180px;
-            }
-            
-            .click-logo {
-                width: 80px;
-                height: 80px;
-                font-size: 1.5rem;
-            }
-        }
-
-        /* Animation Classes */
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .fade-in {
-            animation: fadeIn 0.5s ease;
-        }
-
-        .bounce {
-            animation: bounce 0.6s ease;
-        }
-
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% {
-                transform: translateY(0);
-            }
-            40% {
-                transform: translateY(-30px);
-            }
-            60% {
-                transform: translateY(-15px);
+            100% {
+                transform: translateY(-100px) scale(1.5);
+                opacity: 0;
             }
         }
     </style>
 </head>
 <body>
     <div id="app">
-        <!-- Экран загрузки -->
-        <div class="loading-screen" v-if="!isReady">
-            <div class="loading-spinner"></div>
-            <p>Загрузка Tim Clicker...</p>
+        <!-- Только загрузка и основной интерфейс -->
+        <div class="loading" v-if="!isReady">
+            <div class="spinner"></div>
+            <p>Загрузка игры...</p>
         </div>
 
-        <!-- Стартовый экран -->
-        <div class="start-screen" v-if="isReady && !gameStarted">
-            <div class="logo">TIM</div>
-            <h1>Tim Clicker</h1>
-            <p>Добро пожаловать в улучшенную версию Tim Clicker! Зарабатывайте TIM монеты, покупайте улучшения, активируйте бустеры и приглашайте друзей для получения бонусов. Станьте настоящим крипто-магнатом!</p>
-            <button class="start-button" @click="startGame">НАЧАТЬ ИГРУ</button>
-        </div>
+        <!-- Прямой переход к игре, без заставки -->
+        <div class="game-interface" v-if="isReady">
+            <!-- Компактный блок статистики в одну строку -->
+            <div class="top-stats">
+                <!-- Левый блок: TIM баланс -->
+                <div class="tim-balance">
+                    <div class="tim-amount">{{ formatNumber(coins) }}</div>
+                    <div class="tim-label">TIM</div>
+                </div>
+                
+                <!-- Центральный блок: Статистика кликов -->
+                <div class="click-stats">
+                    <div class="click-stat">
+                        <span>👆</span>
+                        <span class="click-stat-value">+{{ profitPerTap }}</span>
+                    </div>
+                    <div class="click-stat">
+                        <span>⏱️</span>
+                        <span class="click-stat-value">{{ autoClickers }}/мин</span>
+                    </div>
+                </div>
+                
+                <!-- Правый блок: Звезды -->
+                <div class="stars-stat">
+                    <div class="stars-amount">⭐ {{ telegramStars }}</div>
+                    <div class="stars-label">STARS</div>
+                </div>
+            </div>
 
-        <!-- Основной игровой интерфейс -->
-        <div class="game-interface" v-if="gameStarted" :class="{shake: isShaking}">
-            <!-- Эффект молнии -->
-            <div class="lightning" v-if="showLightning"></div>
-            
-            <!-- Золотой дождь -->
-            <div class="gold-rain" v-if="showGoldRain">
-                <div 
-                    v-for="coin in goldCoins" 
-                    :key="coin.id"
-                    class="gold-coin"
-                    :style="{ left: coin.x + 'px', animationDelay: coin.delay + 's' }"
-                ></div>
-            </div>
-            
-            <!-- Логотип -->
-            <div class="logo-container">
-                <div class="logo">TIM</div>
-            </div>
-            
-            <!-- Отображение монет -->
-            <div class="coin-display">{{ formatNumber(coins) }} TIM</div>
-            
-            <!-- Статистика -->
-            <div class="stats">
-                <div class="stat-item">
-                    <div class="stat-label">За клик</div>
-                    <div class="stat-value">+{{ formatNumber(profitPerTap) }}</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-label">В секунду</div>
-                    <div class="stat-value">{{ formatNumber(autoClickers) }}</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-label">Друзей</div>
-                    <div class="stat-value">{{ friends.length }}</div>
+            <!-- Основные страницы -->
+            <div class="page" :class="{active: activePage === 'click'}">
+                <div class="click-area" @click="mine">
+                    CLICK
                 </div>
             </div>
-            
-            <!-- Область для кликов -->
-            <div class="click-area" @click="mine" @mousedown="startClickEffect" @mouseup="endClickEffect" @mouseleave="endClickEffect">
-                <div class="click-logo">TIM</div>
-                <div class="click-effect" :style="{ opacity: clickEffect }"></div>
-                
-                <!-- Энергетические кольца -->
-                <div 
-                    v-for="ring in energyRings" 
-                    :key="ring.id"
-                    class="energy-ring"
-                    :style="{ 
-                        width: ring.size + 'px', 
-                        height: ring.size + 'px',
-                        left: '50%',
-                        top: '50%',
-                        marginLeft: '-' + (ring.size/2) + 'px',
-                        marginTop: '-' + (ring.size/2) + 'px'
-                    }"
-                ></div>
-            </div>
-            
-            <!-- Отображение кошелька -->
-            <div class="wallet-display" @click="showWalletModal">
-                {{ shortWalletAddress }}
-            </div>
-            
-            <!-- Система вкладок -->
-            <div class="tab-system">
-                <div class="tab-container">
-                    <div class="tab" :class="{active: activeTab === 'upgrades'}" @click="activeTab = 'upgrades'">
-                        🔧 Улучшения
-                    </div>
-                    <div class="tab" :class="{active: activeTab === 'boosts'}" @click="activeTab = 'boosts'">
-                        ⚡ Бустеры
-                    </div>
-                    <div class="tab" :class="{active: activeTab === 'friends'}" @click="activeTab = 'friends'">
-                        👥 Друзья
-                    </div>
-                    <div class="tab" :class="{active: activeTab === 'earn'}" @click="activeTab = 'earn'">
-                        💰 Заработок
-                    </div>
-                    <div class="tab" :class="{active: activeTab === 'wallet'}" @click="activeTab = 'wallet'">
-                        💳 Кошелек
-                    </div>
-                </div>
-                
-                <!-- Вкладка улучшений -->
-                <div class="tab-content" :class="{active: activeTab === 'upgrades'}">
-                    <div class="item-card" v-for="upgrade in upgrades" :key="upgrade.id">
-                        <div class="item-header">
-                            <h3 class="item-title">{{ upgrade.name }}</h3>
-                            <div class="item-level">Ур. {{ upgrade.level }}</div>
-                        </div>
-                        <p class="item-description">{{ upgrade.description }}</p>
-                        <div class="item-cost">Стоимость: {{ formatNumber(upgrade.cost) }} TIM</div>
-                        <button 
-                            class="game-button"
-                            :disabled="coins < upgrade.cost"
-                            @click="purchaseUpgrade(upgrade.id)"
-                        >
-                            Купить улучшение
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Вкладка бустеров -->
-                <div class="tab-content" :class="{active: activeTab === 'boosts'}">
-                    <div class="item-card" v-for="boost in boosts" :key="boost.id">
-                        <div class="item-header">
-                            <h3 class="item-title">{{ boost.name }}</h3>
-                        </div>
-                        <p class="item-description">{{ boost.description }}</p>
-                        <div class="item-cost">Длительность: {{ boost.duration / 1000 }}с</div>
-                        <button 
-                            class="game-button"
-                            :disabled="isBoostActive(boost.id)"
-                            @click="activateBoost(boost.id)"
-                        >
-                            {{ isBoostActive(boost.id) ? 'Активен' : 'Активировать' }}
-                        </button>
-                        <div v-if="isBoostActive(boost.id)" class="boost-timer">
-                            Осталось: {{ getBoostTimeRemaining(boost.id) }}с
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Вкладка друзей -->
-                <div class="tab-content" :class="{active: activeTab === 'friends'}">
-                    <div class="item-card">
-                        <h3 class="item-title">Пригласи друзей</h3>
-                        <p class="item-description">Получай бонусы за каждого приглашенного друга!</p>
-                        <button class="game-button" @click="inviteFriend">
-                            Пригласить друга
-                        </button>
-                    </div>
-                    
-                    <div class="item-card" v-if="totalFriendBonus > 0">
-                        <h3 class="item-title">Бонус от друзей</h3>
-                        <p class="item-description">Общий бонус: +{{ totalFriendBonus }}% к доходу</p>
-                    </div>
-                    
-                    <div class="item-card" v-for="friend in friends" :key="friend.id">
-                        <div class="item-header">
-                            <h3 class="item-title">{{ friend.name }}</h3>
-                        </div>
-                        <p class="item-description">Уровень {{ friend.level }}</p>
-                        <div class="item-cost">Бонус: +{{ friend.reward }} TIM</div>
-                        <button 
-                            v-if="!friend.claimed"
-                            class="game-button"
-                            @click="claimFriendReward(friend.id)"
-                        >
-                            Получить награду
-                        </button>
-                        <div v-else class="boost-timer">Награда получена</div>
-                    </div>
-                    
-                    <div v-if="friends.length === 0" class="item-card">
-                        <p class="item-description">У вас пока нет друзей. Пригласите их и получите бонусы!</p>
-                    </div>
-                </div>
-                
-                <!-- Вкладка заработка -->
-                <div class="tab-content" :class="{active: activeTab === 'earn'}">
-                    <div class="item-card" v-for="task in tasks" :key="task.id">
-                        <div class="item-header">
-                            <h3 class="item-title">{{ task.name }}</h3>
-                        </div>
-                        <p class="item-description">{{ task.description }}</p>
-                        <div class="item-cost">Награда: +{{ task.reward }} TIM</div>
-                        <button 
-                            class="game-button"
-                            :disabled="task.completed"
-                            @click="completeTask(task.id)"
-                        >
-                            {{ task.completed ? 'Выполнено' : 'Выполнить' }}
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Вкладка кошелька -->
-                <div class="tab-content" :class="{active: activeTab === 'wallet'}">
-                    <div class="item-card">
-                        <h3 class="item-title">Ваш баланс</h3>
-                        <div class="coin-display" style="font-size: 2rem; margin: 10px 0;">
-                            {{ formatNumber(coins) }} TIM
-                        </div>
-                    </div>
-                    
-                    <div class="item-card">
-                        <h3 class="item-title">Подключить кошелек</h3>
-                        <input 
-                            class="game-input"
-                            type="text" 
-                            v-model="newWalletAddress" 
-                            placeholder="Введите адрес кошелька TIM"
-                        >
-                        <button class="game-button" @click="updateWallet">
-                            Подключить кошелек
-                        </button>
-                    </div>
-                    
-                    <div class="item-card" v-if="walletAddress">
-                        <h3 class="item-title">Вывод средств</h3>
-                        <p class="item-description">Минимальная сумма для вывода: 10,000 TIM</p>
-                        <input 
-                            class="game-input"
-                            type="number" 
-                            v-model="withdrawAmount" 
-                            :placeholder="'Максимум ' + formatNumber(coins)"
-                            :max="coins"
-                        >
-                        <button 
-                            class="game-button"
-                            :disabled="!canWithdraw"
-                            @click="withdrawFunds"
-                        >
-                            Вывести {{ withdrawAmount ? formatNumber(parseInt(withdrawAmount)) : '' }} TIM
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- Модальное окно кошелька -->
-        <div class="modal" :class="{active: showWallet}">
-            <div class="modal-content">
-                <span class="close-modal" @click="showWallet = false">&times;</span>
-                <h2>Кошелек TIM</h2>
-                <p><strong>Текущий адрес:</strong></p>
-                <div class="wallet-display" style="margin: 15px 0;">
-                    {{ walletAddress || 'Не подключен' }}
+            <!-- ВКЛАДКА УЛУЧШЕНИЙ С КРИПТО-МАЙНЕРОМ -->
+            <div class="page" :class="{active: activePage === 'upgrades'}">
+                <div class="grid-layout">
+                    <!-- Усилитель клика -->
+                    <div class="grid-card" @click="buyUpgrade(1)">
+                        <div class="card-title">{{ upgrades[0].name }}</div>
+                        <div class="card-cost">{{ upgrades[0].cost }} TIM</div>
+                        <div class="card-desc">{{ upgrades[0].description }}</div>
+                        <div class="card-desc">Уровень: {{ upgrades[0].level }}</div>
+                    </div>
+                    
+                    <!-- Автомайнер -->
+                    <div class="grid-card" @click="buyUpgrade(2)">
+                        <div class="card-title">{{ upgrades[1].name }}</div>
+                        <div class="card-cost">{{ upgrades[1].cost }} TIM</div>
+                        <div class="card-desc">{{ upgrades[1].description }}</div>
+                        <div class="card-desc">Уровень: {{ upgrades[1].level }}</div>
+                    </div>
+                    
+                    <!-- Множитель -->
+                    <div class="grid-card" @click="buyUpgrade(3)">
+                        <div class="card-title">{{ upgrades[2].name }}</div>
+                        <div class="card-cost">{{ upgrades[2].cost }} TIM</div>
+                        <div class="card-desc">{{ upgrades[2].description }}</div>
+                        <div class="card-desc">Уровень: {{ upgrades[2].level }}</div>
+                    </div>
+                    
+                    <!-- КРИПТО-МАЙНЕР (НОВОЕ) -->
+                    <div class="grid-card crypto-card" @click="activateCryptoMiner">
+                        <div class="card-title" style="color: var(--crypto);">Крипто-майнер</div>
+                        <div class="card-cost">10,000 TIM</div>
+                        <div class="card-desc">Шанс найти 10 MRT при клике</div>
+                        <div class="card-desc">Уровень: {{ cryptoMinerLevel }}</div>
+                        <div class="chance-display">
+                            Шанс: {{ (cryptoMinerChance * 100).toFixed(4) }}%
+                        </div>
+                        <div class="card-desc" style="font-size: 10px; color: var(--crypto);">
+                            Работает 1 мин после активации
+                        </div>
+                    </div>
                 </div>
-                <button class="game-button" @click="copyWallet" v-if="walletAddress">
-                    Копировать адрес
+            </div>
+
+            <div class="page" :class="{active: activePage === 'friends'}">
+                <div class="grid-layout">
+                    <div class="grid-card" @click="generateInvite">
+                        <div style="font-size: 30px;">📤</div>
+                        <div class="card-title">Пригласить</div>
+                        <div class="card-desc">Получите ссылку для друга</div>
+                    </div>
+                    <div class="grid-card" @click="copyReferral">
+                        <div style="font-size: 30px;">🔗</div>
+                        <div class="card-title">Реферальная ссылка</div>
+                        <div class="card-desc">Скопировать ссылку</div>
+                    </div>
+                </div>
+
+                <div v-if="friends.length > 0">
+                    <div class="card">
+                        <div class="card-title">Ваши друзья</div>
+                        <div class="card-desc">Общий бонус: +{{ totalFriendBonus }} TIM/клик</div>
+                    </div>
+
+                    <div v-for="friend in friends" :key="friend.id" class="friend-card">
+                        <div class="friend-info">
+                            <div class="friend-name">{{ friend.name }}</div>
+                            <div class="card-desc">Уровень: {{ friend.level }}</div>
+                            <div class="friend-bonus">Бонус: +{{ friend.bonus }} TIM/клик</div>
+                        </div>
+                        <button class="friend-btn" @click="claimFriendBonus(friend.id)" v-if="!friend.claimed">
+                            Забрать
+                        </button>
+                        <div v-else style="color: var(--success); font-weight: bold;">
+                            ✅
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" v-if="friends.length === 0">
+                    <div class="card-desc">У вас пока нет друзей. Пригласите их по ссылке выше!</div>
+                </div>
+            </div>
+
+            <div class="page" :class="{active: activePage === 'minigames'}">
+                <div class="grid-layout">
+                    <div class="grid-card" @click="playGame('slots')">
+                        <div style="font-size: 30px;">🎰</div>
+                        <div class="card-title">Слоты</div>
+                        <div class="card-desc">Каждые 30 минут</div>
+                    </div>
+                    <div class="grid-card" @click="playGame('wheel')">
+                        <div style="font-size: 30px;">🎡</div>
+                        <div class="card-title">Колесо удачи</div>
+                        <div class="card-desc">1 раз в день</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="page" :class="{active: activePage === 'tokens'}">
+                <div class="grid-layout">
+                    <div class="grid-card" @click="openFullscreen('convert')">
+                        <div style="font-size: 30px;">💱</div>
+                        <div class="card-title">Конвертация</div>
+                        <div class="card-desc">100,000 игровых TIM = 1 MRT</div>
+                    </div>
+                    <div class="grid-card" @click="openFullscreen('withdraw')">
+                        <div style="font-size: 30px;">💰</div>
+                        <div class="card-title">Вывод <span class="mrt-badge">MRT</span></div>
+                        <div class="card-desc">Минимум 10 MRT</div>
+                    </div>
+                    <div class="grid-card" @click="openFullscreen('wallet')">
+                        <div style="font-size: 30px;">👛</div>
+                        <div class="card-title">Кошелек</div>
+                        <div class="card-desc">Настройка выплат</div>
+                    </div>
+                    <div class="grid-card" @click="openFullscreen('stars')">
+                        <div style="font-size: 30px;">⭐</div>
+                        <div class="card-title">Telegram Stars</div>
+                        <div class="card-desc">Покупка и премиум</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Полноэкранные страницы -->
+            
+            <!-- Конвертация (полноэкранная) -->
+            <div class="fullscreen-page" :class="{active: fullscreenPage === 'convert'}">
+                <button class="btn-back" @click="closeFullscreen">
+                    ←
                 </button>
+                <div class="fullscreen-content">
+                    <div class="page-header">
+                        <div style="font-size: 40px;">💱</div>
+                        <div class="page-title">Конвертация TIM → MRT</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-desc">Ваши токены: {{ realTokens }} <span class="mrt-badge">MRT</span> (реальные)</div>
+                        <div class="card-desc">Ваши монеты: {{ formatNumber(coins) }} TIM (игровые)</div>
+                        <div class="card-desc">Курс: 100,000 игровых TIM = 1 MRT</div>
+                        <input type="number" class="input" v-model="convertAmount" placeholder="Сумма для конвертации" min="100000">
+                        <button class="btn" @click="convertTokens" :disabled="convertAmount < 100000 || coins < convertAmount">
+                            Конвертировать в MRT
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Вывод (полноэкранная) -->
+            <div class="fullscreen-page" :class="{active: fullscreenPage === 'withdraw'}">
+                <button class="btn-back" @click="closeFullscreen">
+                    ←
+                </button>
+                <div class="fullscreen-content">
+                    <div class="page-header">
+                        <div style="font-size: 40px;">💰</div>
+                        <div class="page-title">Вывод MRT токенов</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-desc">Ваши токены: {{ realTokens }} <span class="mrt-badge">MRT</span></div>
+                        <div class="card-desc">Минимум для вывода: 10 MRT</div>
+                        <input type="number" class="input" v-model="withdrawAmount" placeholder="Сумма для вывода" min="10">
+                        <button class="btn" @click="withdrawTokens" :disabled="withdrawAmount < 10 || realTokens < withdrawAmount">
+                            Вывести MRT
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Кошелек (полноэкранная) -->
+            <div class="fullscreen-page" :class="{active: fullscreenPage === 'wallet'}">
+                <button class="btn-back" @click="closeFullscreen">
+                    ←
+                </button>
+                <div class="fullscreen-content">
+                    <div class="page-header">
+                        <div style="font-size: 40px;">👛</div>
+                        <div class="page-title">Кошелек Polygon</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-desc">Введите адрес кошелька для вывода средств MRT</div>
+                        
+                        <input type="text" class="input" v-model="polygonWalletInput" 
+                               placeholder="0x..." 
+                               @keyup.enter="saveWallet">
+                        
+                        <button class="btn" @click="saveWallet" :disabled="!isValidWallet">
+                            {{ polygonWalletAddress ? 'Обновить' : 'Сохранить' }}
+                        </button>
+
+                        <div v-if="polygonWalletAddress" style="margin-top: 20px;">
+                            <div class="card-desc">Текущий адрес:</div>
+                            <div class="wallet-address" @click="copyWallet">
+                                {{ polygonWalletAddress }}
+                            </div>
+                            <div class="card-desc">Нажмите чтобы скопировать</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Telegram Stars (полноэкранная) - ОБНОВЛЕНА С КОМПАКТНЫМ ДИЗАЙНОМ -->
+            <div class="fullscreen-page" :class="{active: fullscreenPage === 'stars'}">
+                <button class="btn-back" @click="closeFullscreen">
+                    ←
+                </button>
+                <div class="fullscreen-content">
+                    <div class="page-header">
+                        <div style="font-size: 40px;">⭐</div>
+                        <div class="page-title">Telegram Stars</div>
+                    </div>
+                    
+                    <!-- Баланс -->
+                    <div class="stars-section">
+                        <div class="stars-balance">
+                            <div class="balance-amount">⭐ {{ telegramStars }}</div>
+                            <div class="balance-label">Ваш баланс звезд</div>
+                        </div>
+                    </div>
+
+                    <!-- Пополнение звезд -->
+                    <div class="stars-section">
+                        <div class="section-title">
+                            <span>💎</span>
+                            <span>Пополнить баланс</span>
+                        </div>
+                        <div class="stars-grid">
+                            <div class="stars-package" @click="buyStars(100)">
+                                <div class="stars-icon">⭐</div>
+                                <div class="stars-count">100</div>
+                            </div>
+                            <div class="stars-package" @click="buyStars(500)">
+                                <div class="stars-icon">⭐</div>
+                                <div class="stars-count">500</div>
+                            </div>
+                            <div class="stars-package" @click="buyStars(1000)">
+                                <div class="stars-icon">⭐</div>
+                                <div class="stars-count">1000</div>
+                            </div>
+                            <div class="stars-package" @click="buyStars(5000)">
+                                <div class="stars-icon">⭐</div>
+                                <div class="stars-count">5000</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Покупка TIM за звезды -->
+                    <div class="stars-section">
+                        <div class="section-title">
+                            <span>🪙</span>
+                            <span>Купить TIM за звезды</span>
+                        </div>
+                        <div class="tim-packages">
+                            <!-- Базовый пакет -->
+                            <div class="tim-package" @click="buyTimForStars(50, 100000)">
+                                <div class="package-left">
+                                    <div class="package-cost">
+                                        <span>⭐</span>
+                                        <span>50</span>
+                                    </div>
+                                    <div class="package-reward">100,000 TIM</div>
+                                    <div class="package-benefit">Базовый пакет</div>
+                                </div>
+                                <div class="package-right">
+                                    <button class="buy-btn" :disabled="telegramStars < 50">
+                                        Купить
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Средний пакет -->
+                            <div class="tim-package" @click="buyTimForStars(100, 250000)">
+                                <div class="package-left">
+                                    <div class="package-cost">
+                                        <span>⭐</span>
+                                        <span>100</span>
+                                    </div>
+                                    <div class="package-reward">250,000 TIM</div>
+                                    <div class="package-benefit">+150% выгоды</div>
+                                </div>
+                                <div class="package-right">
+                                    <button class="buy-btn" :disabled="telegramStars < 100">
+                                        Купить
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Продвинутый пакет -->
+                            <div class="tim-package" @click="buyTimForStars(200, 600000)">
+                                <div class="package-left">
+                                    <div class="package-cost">
+                                        <span>⭐</span>
+                                        <span>200</span>
+                                    </div>
+                                    <div class="package-reward">600,000 TIM</div>
+                                    <div class="package-benefit">+200% выгоды</div>
+                                </div>
+                                <div class="package-right">
+                                    <button class="buy-btn" :disabled="telegramStars < 200">
+                                        Купить
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Премиум пакет -->
+                            <div class="tim-package" @click="buyTimForStars(500, 2000000)">
+                                <div class="package-left">
+                                    <div class="package-cost">
+                                        <span>⭐</span>
+                                        <span>500</span>
+                                    </div>
+                                    <div class="package-reward">2,000,000 TIM</div>
+                                    <div class="package-benefit">+300% выгоды</div>
+                                </div>
+                                <div class="package-right">
+                                    <button class="buy-btn" :disabled="telegramStars < 500">
+                                        Купить
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Вкладки внизу с иконками -->
+            <div class="bottom-tabs">
+                <div class="bottom-tab" :class="{active: activePage === 'click'}" @click="setPage('click')" title="Кликер">
+                    👆
+                    <span class="tab-label">Клик</span>
+                </div>
+                <div class="bottom-tab" :class="{active: activePage === 'upgrades'}" @click="setPage('upgrades')" title="Улучшения">
+                    ⚡
+                    <span class="tab-label">Улучш.</span>
+                </div>
+                <div class="bottom-tab" :class="{active: activePage === 'friends'}" @click="setPage('friends')" title="Друзья">
+                    👥
+                    <span class="tab-label">Друзья</span>
+                </div>
+                <div class="bottom-tab" :class="{active: activePage === 'minigames'}" @click="setPage('minigames')" title="Миниигры">
+                    🎮
+                    <span class="tab-label">Игры</span>
+                </div>
+                <div class="bottom-tab" :class="{active: activePage === 'tokens'}" @click="setPage('tokens')" title="Токены">
+                    💰
+                    <span class="tab-label">Токены</span>
+                </div>
             </div>
         </div>
 
-        <!-- Модальное окно добавления друга -->
-        <div class="modal" :class="{active: showFriendModal}">
-            <div class="modal-content">
-                <span class="close-modal" @click="showFriendModal = false">&times;</span>
-                <h2>Пригласить друга</h2>
-                <input 
-                    class="game-input"
-                    type="text" 
-                    v-model="newFriendName" 
-                    placeholder="Имя друга"
-                >
-                <button class="game-button" @click="addFriend">
-                    Добавить друга
-                </button>
-            </div>
+        <!-- Эффекты крипто-майнера -->
+        <div v-for="(effect, index) in cryptoEffects" :key="index" 
+             class="crypto-effect"
+             :style="{
+                 left: effect.x + 'px',
+                 top: effect.y + 'px'
+             }">
+            +10 MRT
+        </div>
+
+        <div class="notification success" v-if="notification.show && notification.type === 'success'">
+            {{ notification.message }}
+        </div>
+        <div class="notification error" v-if="notification.show && notification.type === 'error'">
+            {{ notification.message }}
+        </div>
+        <div class="notification premium" v-if="notification.show && notification.type === 'premium'">
+            {{ notification.message }}
+        </div>
+        <div class="notification crypto" v-if="notification.show && notification.type === 'crypto'">
+            {{ notification.message }}
         </div>
     </div>
 
     <script>
-        const { createApp, ref, computed, onMounted, onUnmounted } = Vue;
+        const { createApp, ref, computed, onMounted } = Vue;
         
         createApp({
             setup() {
-                // Состояние игры
                 const isReady = ref(false);
-                const gameStarted = ref(false);
                 const coins = ref(0);
                 const profitPerTap = ref(1);
                 const autoClickers = ref(0);
-                const clickEffect = ref(0);
-                const activeTab = ref('upgrades');
+                const activePage = ref('click');
+                const fullscreenPage = ref('');
                 
-                // Эффекты
-                const isShaking = ref(false);
-                const showLightning = ref(false);
-                const showGoldRain = ref(false);
-                const goldCoins = ref([]);
-                const energyRings = ref([]);
-                
-                // Кошелек
-                const walletAddress = ref('');
-                const newWalletAddress = ref('');
-                const showWallet = ref(false);
+                const realTokens = ref(0); // MRT токены
+                const polygonWalletAddress = ref('');
+                const polygonWalletInput = ref('');
+                const convertAmount = ref('');
                 const withdrawAmount = ref('');
                 
-                // Друзья
                 const friends = ref([]);
-                const showFriendModal = ref(false);
-                const newFriendName = ref('');
+                const userId = ref('user_' + Math.random().toString(36).substr(2, 9));
+                const telegramStars = ref(0);
+                const isPremium = ref(false);
                 
-                // Telegram WebApp
-                const tg = window.Telegram?.WebApp;
+                // Крипто-майнер
+                const cryptoMinerLevel = ref(0);
+                const cryptoMinerActive = ref(false);
+                const cryptoMinerEndTime = ref(0);
+                const cryptoMinerChance = ref(0.00001); // 0.001%
+                const cryptoEffects = ref([]);
                 
-                // Улучшения
-                const upgrades = ref({
-                    tapPower: {
-                        id: 'tapPower',
-                        name: 'Мощность клика',
-                        description: 'Увеличивает количество TIM за клик',
-                        cost: 100,
-                        level: 0,
-                        effect: { type: 'tap_multiplier', value: 1 }
-                    },
-                    autoMiner: {
-                        id: 'autoMiner',
-                        name: 'Автомайнер',
-                        description: 'Автоматически добывает TIM каждую секунду',
-                        cost: 500,
-                        level: 0,
-                        effect: { type: 'auto_clicker', value: 1 }
-                    },
-                    clickMultiplier: {
-                        id: 'clickMultiplier',
-                        name: 'Множитель клика',
-                        description: 'Удваивает доход от кликов',
-                        cost: 1000,
-                        level: 0,
-                        effect: { type: 'tap_multiplier', value: 2 }
-                    }
-                });
+                const notification = ref({ show: false, message: '', type: 'success' });
+                const lastClickTime = ref(0);
+                const clickCooldown = 100;
                 
-                // Бустеры
-                const boosts = ref({
-                    tapBoost: {
-                        id: 'tapBoost',
-                        name: 'Усиление клика',
-                        description: '2x доход от кликов на 30 секунд',
-                        duration: 30000,
-                        effect: { type: 'tap_multiplier', value: 2 },
-                        expiresAt: null
-                    },
-                    autoBoost: {
-                        id: 'autoBoost',
-                        name: 'Турбо майнинг',
-                        description: '3x скорость автомайнинга на 60 секунд',
-                        duration: 60000,
-                        effect: { type: 'auto_multiplier', value: 3 },
-                        expiresAt: null
-                    },
-                    coinRain: {
-                        id: 'coinRain',
-                        name: 'Дождь монет',
-                        description: 'Дождь из золотых монет на 15 секунд',
-                        duration: 15000,
-                        effect: { type: 'coin_rain', value: 100 },
-                        expiresAt: null
-                    }
-                });
-                
-                // Задания
-                const tasks = ref([
-                    {
-                        id: 'daily_login',
-                        name: 'Ежедневный вход',
-                        description: 'Заходи в игру каждый день',
-                        reward: 1000,
-                        completed: false
-                    },
-                    {
-                        id: 'invite_friend',
-                        name: 'Пригласи друга',
-                        description: 'Пригласи друга в Telegram',
-                        reward: 5000,
-                        completed: false
-                    },
-                    {
-                        id: 'reach_1000',
-                        name: 'Накопи 1000 TIM',
-                        description: 'Собери свою первую тысячу монет',
-                        reward: 500,
-                        completed: false
-                    }
+                const upgrades = ref([
+                    { id: 1, name: 'Усилитель клика', description: '+1 TIM за клик', cost: 100, level: 0 },
+                    { id: 2, name: 'Автомайнер', description: '+1 TIM в минуту', cost: 500, level: 0 },
+                    { id: 3, name: 'Множитель', description: 'x2 доход от кликов', cost: 1000, level: 0 }
                 ]);
                 
-                // Интервалы
-                let autoClickerInterval = null;
-                let saveInterval = null;
-                let boostCheckInterval = null;
-                
-                // Вычисляемые свойства
-                const shortWalletAddress = computed(() => {
-                    if (!walletAddress.value) return "Кошелек: Не подключен";
-                    return `Кошелек: ${walletAddress.value.slice(0, 8)}...${walletAddress.value.slice(-6)}`;
-                });
-                
                 const totalFriendBonus = computed(() => {
-                    return friends.value.reduce((sum, friend) => friend.claimed ? 0 : sum + friend.reward, 0);
+                    return friends.value.reduce((sum, friend) => {
+                        return sum + (friend.claimed ? 0 : friend.bonus);
+                    }, 0);
                 });
                 
-                const canWithdraw = computed(() => {
-                    const amount = parseInt(withdrawAmount.value);
-                    return walletAddress.value && 
-                           amount >= 10000 && 
-                           amount <= coins.value;
+                const isValidWallet = computed(() => {
+                    const addr = polygonWalletInput.value.trim();
+                    return addr.startsWith('0x') && addr.length === 42;
                 });
                 
-                // Функции форматирования
+                // Вычисление шанса крипто-майнера с учетом уровня
+                const currentCryptoChance = computed(() => {
+                    return cryptoMinerChance.value * (1 + cryptoMinerLevel.value * 0.5);
+                });
+                
+                // Оставшееся время действия крипто-майнера
+                const cryptoMinerTimeLeft = computed(() => {
+                    if (!cryptoMinerActive.value) return 0;
+                    const now = Date.now();
+                    const timeLeft = cryptoMinerEndTime.value - now;
+                    return timeLeft > 0 ? Math.ceil(timeLeft / 1000) : 0;
+                });
+                
                 function formatNumber(num) {
-                    if (num >= 1e12) return (num / 1e12).toFixed(1) + 'T';
-                    if (num >= 1e9) return (num / 1e9).toFixed(1) + 'B';
-                    if (num >= 1e6) return (num / 1e6).toFixed(1) + 'M';
-                    if (num >= 1e3) return (num / 1e3).toFixed(1) + 'K';
-                    return Math.floor(num).toString();
+                    if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+                    if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+                    return Math.floor(num);
                 }
                 
-                // Haptic feedback
-                function triggerHaptic(type = 'light') {
-                    if (tg?.HapticFeedback) {
-                        if (type === 'success' || type === 'error' || type === 'warning') {
-                            tg.HapticFeedback.notificationOccurred(type);
-                        } else {
-                            tg.HapticFeedback.impactOccurred(type);
-                        }
-                    }
+                function showNotify(msg, type = 'success') {
+                    notification.value = { show: true, message: msg, type };
+                    setTimeout(() => notification.value.show = false, 3000);
                 }
                 
-                // Эффекты клика
-                function startClickEffect() {
-                    clickEffect.value = 1;
-                }
-                
-                function endClickEffect() {
-                    clickEffect.value = 0;
-                }
-                
-                // Создание частиц
-                function createParticles(x, y, count = 8, isCritical = false) {
-                    for (let i = 0; i < count; i++) {
-                        const particle = document.createElement('div');
-                        particle.className = 'particle';
-                        document.body.appendChild(particle);
-                        
-                        const size = Math.random() * 8 + 6;
-                        particle.style.width = `${size}px`;
-                        particle.style.height = `${size}px`;
-                        particle.style.left = `${x + (Math.random() - 0.5) * 100}px`;
-                        particle.style.top = `${y + (Math.random() - 0.5) * 100}px`;
-                        
-                        if (isCritical) {
-                            particle.style.backgroundColor = '#ff6b6b';
-                            particle.style.boxShadow = '0 0 15px #ff6b6b';
-                        }
-                        
-                        setTimeout(() => {
-                            if (particle.parentNode) {
-                                particle.remove();
-                            }
-                        }, 1500);
-                    }
-                }
-                
-                // Критический удар
-                function showCriticalHit(x, y, value) {
-                    const critElement = document.createElement('div');
-                    critElement.className = 'critical-hit';
-                    critElement.textContent = `КРИТИЧЕСКИЙ! +${formatNumber(value)}`;
-                    critElement.style.left = `${x}px`;
-                    critElement.style.top = `${y}px`;
-                    document.body.appendChild(critElement);
-                    
+                function addCryptoEffect(x, y) {
+                    cryptoEffects.value.push({ x, y });
                     setTimeout(() => {
-                        if (critElement.parentNode) {
-                            critElement.remove();
-                        }
-                    }, 1500);
-                }
-                
-                // Создание энергетических колец
-                function createEnergyRing() {
-                    const ring = {
-                        id: Date.now() + Math.random(),
-                        size: 260
-                    };
-                    energyRings.value.push(ring);
-                    
-                    setTimeout(() => {
-                        energyRings.value = energyRings.value.filter(r => r.id !== ring.id);
+                        cryptoEffects.value.shift();
                     }, 2000);
                 }
                 
-                // Специальные эффекты
-                function triggerLightning() {
-                    showLightning.value = true;
-                    setTimeout(() => {
-                        showLightning.value = false;
-                    }, 300);
-                }
-                
-                function triggerShake() {
-                    isShaking.value = true;
-                    setTimeout(() => {
-                        isShaking.value = false;
-                    }, 600);
-                }
-                
-                function triggerGoldRain() {
-                    const coinCount = 50;
-                    goldCoins.value = [];
+                function mine() {
+                    const now = Date.now();
+                    if (now - lastClickTime.value < clickCooldown) return;
+                    lastClickTime.value = now;
                     
-                    for (let i = 0; i < coinCount; i++) {
-                        goldCoins.value.push({
-                            id: i,
-                            x: Math.random() * window.innerWidth,
-                            delay: Math.random() * 2
-                        });
-                    }
+                    let earned = profitPerTap.value + totalFriendBonus.value;
+                    coins.value += earned;
                     
-                    showGoldRain.value = true;
-                    setTimeout(() => {
-                        showGoldRain.value = false;
-                        goldCoins.value = [];
-                    }, 15000);
-                }
-                
-                // Основная функция майнинга
-                function mine(event) {
-                    let earnedCoins = profitPerTap.value;
-                    let isCritical = false;
-                    
-                    // Применение активных бустеров
-                    Object.values(boosts.value).forEach(boost => {
-                        if (boost.expiresAt && boost.expiresAt > Date.now()) {
-                            if (boost.effect.type === 'tap_multiplier') {
-                                earnedCoins *= boost.effect.value;
+                    // Проверка срабатывания крипто-майнера
+                    if (cryptoMinerActive.value && cryptoMinerTimeLeft.value > 0) {
+                        const chance = currentCryptoChance.value;
+                        if (Math.random() < chance) {
+                            // Нашли MRT!
+                            realTokens.value += 10;
+                            showNotify(`🎰 Крипто-майнер нашел 10 MRT!`, 'crypto');
+                            
+                            // Добавляем эффект
+                            const clickArea = document.querySelector('.click-area');
+                            if (clickArea) {
+                                const rect = clickArea.getBoundingClientRect();
+                                const x = rect.left + rect.width / 2;
+                                const y = rect.top + rect.height / 2;
+                                addCryptoEffect(x, y);
                             }
                         }
-                    });
-                    
-                    // Бонус от друзей
-                    earnedCoins += totalFriendBonus.value;
-                    
-                    // Критический удар (5% шанс)
-                    if (Math.random() < 0.05) {
-                        earnedCoins *= 5;
-                        isCritical = true;
-                        triggerHaptic('heavy');
-                    } else {
-                        triggerHaptic('light');
                     }
                     
-                    coins.value += earnedCoins;
-                    
-                    // Эффекты
-                    const rect = event.target.getBoundingClientRect();
-                    const x = event.clientX;
-                    const y = event.clientY;
-                    
-                    createParticles(x, y, isCritical ? 15 : 8, isCritical);
-                    
-                    if (isCritical) {
-                        showCriticalHit(x - 100, y - 50, earnedCoins);
-                        createEnergyRing();
-                    }
-                    
-                    // Проверка заданий
-                    checkTaskCompletion();
-                    
-                    // Случайные спецэффекты
-                    if (Math.random() < 0.001) triggerLightning();
-                    if (Math.random() < 0.001) triggerShake();
+                    saveGame();
                 }
                 
-                // Покупка улучшений
-                function purchaseUpgrade(upgradeId) {
-                    const upgrade = upgrades.value[upgradeId];
+                function buyUpgrade(id) {
+                    const upgrade = upgrades.value.find(u => u.id === id);
                     if (!upgrade || coins.value < upgrade.cost) return;
                     
                     coins.value -= upgrade.cost;
-                    upgrade.level += 1;
+                    upgrade.level++;
                     upgrade.cost = Math.floor(upgrade.cost * 1.5);
                     
-                    if (upgrade.effect.type === 'tap_multiplier') {
-                        profitPerTap.value += upgrade.effect.value;
-                    } else if (upgrade.effect.type === 'auto_clicker') {
-                        autoClickers.value += upgrade.effect.value;
-                    }
+                    if (id === 1) profitPerTap.value += 1;
+                    if (id === 2) autoClickers.value += 1;
+                    if (id === 3) profitPerTap.value *= 2;
                     
-                    triggerHaptic('success');
+                    showNotify('Улучшение куплено!');
                     saveGame();
                 }
                 
-                // Активация бустеров
-                function activateBoost(boostId) {
-                    const boost = boosts.value[boostId];
-                    if (!boost || isBoostActive(boostId)) return;
+                // Активация крипто-майнера
+                function activateCryptoMiner() {
+                    const cost = 10000;
                     
-                    boost.expiresAt = Date.now() + boost.duration;
-                    
-                    if (boost.effect.type === 'coin_rain') {
-                        triggerGoldRain();
+                    if (coins.value < cost) {
+                        showNotify(`Недостаточно TIM! Нужно ${cost} TIM`, 'error');
+                        return;
                     }
                     
-                    triggerHaptic('success');
-                    saveGame();
-                }
-                
-                // Проверка активности буста
-                function isBoostActive(boostId) {
-                    const boost = boosts.value[boostId];
-                    return boost && boost.expiresAt && boost.expiresAt > Date.now();
-                }
-                
-                // Получение оставшегося времени буста
-                function getBoostTimeRemaining(boostId) {
-                    const boost = boosts.value[boostId];
-                    if (!boost || !boost.expiresAt) return 0;
-                    return Math.max(0, Math.ceil((boost.expiresAt - Date.now()) / 1000));
-                }
-                
-                // Приглашение друга
-                function inviteFriend() {
-                    if (tg) {
-                        // Реальная логика для Telegram
-                        triggerHaptic('selection');
-                    } else {
-                        // Для демонстрации
-                        showFriendModal.value = true;
+                    if (cryptoMinerActive.value && cryptoMinerTimeLeft.value > 0) {
+                        showNotify('Крипто-майнер уже активен!', 'error');
+                        return;
                     }
-                }
-                
-                // Добавление друга
-                function addFriend() {
-                    if (!newFriendName.value.trim()) return;
                     
-                    const friend = {
-                        id: Date.now().toString(),
-                        name: newFriendName.value.trim(),
-                        level: Math.floor(Math.random() * 10) + 1,
-                        reward: Math.floor(Math.random() * 500) + 100,
-                        claimed: false
-                    };
+                    coins.value -= cost;
+                    cryptoMinerActive.value = true;
+                    cryptoMinerLevel.value++;
+                    cryptoMinerEndTime.value = Date.now() + 60000; // 1 минута
                     
-                    friends.value.push(friend);
-                    newFriendName.value = '';
-                    showFriendModal.value = false;
-                    
-                    triggerHaptic('success');
+                    showNotify(`Крипто-майнер активирован на 1 минуту! Шанс: ${(currentCryptoChance.value * 100).toFixed(4)}%`, 'crypto');
                     saveGame();
+                    
+                    // Автоматическое отключение через 1 минуту
+                    setTimeout(() => {
+                        if (cryptoMinerActive.value) {
+                            cryptoMinerActive.value = false;
+                            showNotify('Крипто-майнер деактивирован', 'success');
+                            saveGame();
+                        }
+                    }, 60000);
                 }
                 
-                // Получение награды от друга
-                function claimFriendReward(friendId) {
+                function generateInvite() {
+                    const inviteCode = Math.random().toString(36).substr(2, 8).toUpperCase();
+                    showNotify(`Код приглашения: ${inviteCode}. Делитесь с друзьями!`);
+                }
+                
+                function copyReferral() {
+                    const link = `https://t.me/ваш_бот?start=${userId.value}`;
+                    navigator.clipboard.writeText(link)
+                        .then(() => showNotify('Ссылка скопирована!'))
+                        .catch(() => showNotify('Ошибка копирования', 'error'));
+                }
+                
+                function claimFriendBonus(friendId) {
                     const friend = friends.value.find(f => f.id === friendId);
                     if (!friend || friend.claimed) return;
                     
-                    coins.value += friend.reward;
+                    coins.value += friend.bonus * 100;
                     friend.claimed = true;
-                    
-                    triggerHaptic('success');
+                    showNotify(`Получено ${friend.bonus * 100} TIM от друга!`);
                     saveGame();
                 }
                 
-                // Выполнение заданий
-                function completeTask(taskId) {
-                    const task = tasks.value.find(t => t.id === taskId);
-                    if (!task || task.completed) return;
-                    
-                    coins.value += task.reward;
-                    task.completed = true;
-                    
-                    triggerHaptic('success');
+                function addFriend(name) {
+                    const friend = {
+                        id: Date.now(),
+                        name: name || `Друг ${friends.value.length + 1}`,
+                        level: Math.floor(Math.random() * 10) + 1,
+                        bonus: Math.floor(Math.random() * 5) + 1,
+                        claimed: false
+                    };
+                    friends.value.push(friend);
+                    showNotify(`Друг ${friend.name} добавлен!`);
                     saveGame();
                 }
                 
-                // Проверка выполнения заданий
-                function checkTaskCompletion() {
-                    const reach1000Task = tasks.value.find(t => t.id === 'reach_1000');
-                    if (reach1000Task && !reach1000Task.completed && coins.value >= 1000) {
-                        reach1000Task.completed = true;
-                        coins.value += reach1000Task.reward;
-                        triggerHaptic('success');
+                function convertTokens() {
+                    if (convertAmount.value < 100000 || coins.value < convertAmount.value) {
+                        showNotify('Минимум 100,000 TIM для конвертации', 'error');
+                        return;
                     }
+                    
+                    const tokens = Math.floor(convertAmount.value / 100000);
+                    coins.value -= convertAmount.value;
+                    realTokens.value += tokens;
+                    convertAmount.value = '';
+                    showNotify(`Конвертировано в ${tokens} MRT токенов!`, 'success');
+                    saveGame();
                 }
                 
-                // Работа с кошельком
-                function showWalletModal() {
-                    showWallet.value = true;
+                function withdrawTokens() {
+                    if (withdrawAmount.value < 10 || realTokens.value < withdrawAmount.value) {
+                        showNotify('Минимум 10 MRT для вывода', 'error');
+                        return;
+                    }
+                    
+                    if (!polygonWalletAddress.value) {
+                        showNotify('Сначала подключите кошелек', 'error');
+                        openFullscreen('wallet');
+                        return;
+                    }
+                    
+                    realTokens.value -= withdrawAmount.value;
+                    withdrawAmount.value = '';
+                    showNotify(`Запрос на вывод ${withdrawAmount.value} MTR отправлен!`, 'success');
+                    saveGame();
                 }
                 
-                function updateWallet() {
-                    if (newWalletAddress.value.trim()) {
-                        walletAddress.value = newWalletAddress.value.trim();
-                        newWalletAddress.value = '';
-                        triggerHaptic('success');
-                        saveGame();
+                function saveWallet() {
+                    if (!isValidWallet.value) {
+                        showNotify('Неверный формат адреса кошелька', 'error');
+                        return;
                     }
+                    
+                    polygonWalletAddress.value = polygonWalletInput.value.trim();
+                    localStorage.setItem('timWallet', polygonWalletAddress.value);
+                    polygonWalletInput.value = '';
+                    showNotify('Кошелек сохранен!');
+                    saveGame();
                 }
                 
                 function copyWallet() {
-                    if (navigator.clipboard && walletAddress.value) {
-                        navigator.clipboard.writeText(walletAddress.value);
-                        triggerHaptic('success');
+                    if (!polygonWalletAddress.value) return;
+                    navigator.clipboard.writeText(polygonWalletAddress.value)
+                        .then(() => showNotify('Адрес скопирован!'))
+                        .catch(() => showNotify('Ошибка копирования', 'error'));
+                }
+                
+                function buyStars(amount) {
+                    telegramStars.value += amount;
+                    showNotify(`Куплено ${amount} Telegram Stars!`, 'premium');
+                    saveGame();
+                }
+                
+                function buyTimForStars(starsCost, timAmount) {
+                    if (telegramStars.value < starsCost) {
+                        showNotify('Недостаточно звезд!', 'error');
+                        return;
+                    }
+                    
+                    telegramStars.value -= starsCost;
+                    coins.value += timAmount;
+                    
+                    showNotify(`Куплено ${formatNumber(timAmount)} TIM за ${starsCost} звезд!`, 'premium');
+                    saveGame();
+                }
+                
+                function playGame(type) {
+                    let win = 0;
+                    if (type === 'slots') {
+                        win = Math.random() < 0.3 ? Math.floor(Math.random() * 10000) : 0;
+                    } else if (type === 'wheel') {
+                        win = Math.floor(Math.random() * 50000);
+                    }
+                    
+                    if (win > 0) {
+                        coins.value += win;
+                        showNotify(`Вы выиграли ${formatNumber(win)} TIM!`);
+                        saveGame();
+                    } else {
+                        showNotify('Повезет в следующий раз!', 'error');
                     }
                 }
                 
-                function withdrawFunds() {
-                    if (!canWithdraw.value) return;
-                    
-                    const amount = parseInt(withdrawAmount.value);
-                    coins.value -= amount;
-                    withdrawAmount.value = '';
-                    
-                    triggerHaptic('success');
-                    saveGame();
-                    
-                    // Здесь была бы логика реального вывода
-                    alert(`Запрос на вывод ${formatNumber(amount)} TIM отправлен!`);
+                function setPage(page) {
+                    activePage.value = page;
+                    fullscreenPage.value = '';
                 }
                 
-                // Сохранение игры
+                function openFullscreen(page) {
+                    fullscreenPage.value = page;
+                }
+                
+                function closeFullscreen() {
+                    fullscreenPage.value = '';
+                }
+                
                 function saveGame() {
-                    const gameState = {
+                    const gameData = {
                         coins: coins.value,
                         profitPerTap: profitPerTap.value,
                         autoClickers: autoClickers.value,
-                        upgrades: upgrades.value,
-                        boosts: boosts.value,
+                        realTokens: realTokens.value,
+                        telegramStars: telegramStars.value,
+                        isPremium: isPremium.value,
                         friends: friends.value,
-                        tasks: tasks.value,
-                        walletAddress: walletAddress.value,
+                        upgrades: upgrades.value,
+                        cryptoMinerLevel: cryptoMinerLevel.value,
+                        cryptoMinerActive: cryptoMinerActive.value,
+                        cryptoMinerEndTime: cryptoMinerEndTime.value,
+                        activePage: activePage.value,
                         lastSave: Date.now()
                     };
-                    
-                    localStorage.setItem('timClickerGame', JSON.stringify(gameState));
+                    localStorage.setItem('timClickerSave', JSON.stringify(gameData));
                 }
                 
-                // Загрузка игры
                 function loadGame() {
-                    const saved = localStorage.getItem('timClickerGame');
+                    const saved = localStorage.getItem('timClickerSave');
                     if (saved) {
                         try {
-                            const gameState = JSON.parse(saved);
-                            coins.value = gameState.coins || 0;
-                            profitPerTap.value = gameState.profitPerTap || 1;
-                            autoClickers.value = gameState.autoClickers || 0;
+                            const gameData = JSON.parse(saved);
+                            coins.value = gameData.coins || 0;
+                            profitPerTap.value = gameData.profitPerTap || 1;
+                            autoClickers.value = gameData.autoClickers || 0;
+                            realTokens.value = gameData.realTokens || 0;
+                            telegramStars.value = gameData.telegramStars || 0;
+                            isPremium.value = gameData.isPremium || false;
+                            friends.value = gameData.friends || [];
+                            upgrades.value = gameData.upgrades || [
+                                { id: 1, name: 'Усилитель клика', description: '+1 TIM за клик', cost: 100, level: 0 },
+                                { id: 2, name: 'Автомайнер', description: '+1 TIM в минуту', cost: 500, level: 0 },
+                                { id: 3, name: 'Множитель', description: 'x2 доход от кликов', cost: 1000, level: 0 }
+                            ];
+                            cryptoMinerLevel.value = gameData.cryptoMinerLevel || 0;
+                            cryptoMinerActive.value = gameData.cryptoMinerActive || false;
+                            cryptoMinerEndTime.value = gameData.cryptoMinerEndTime || 0;
+                            activePage.value = gameData.activePage || 'click';
                             
-                            if (gameState.upgrades) {
-                                Object.assign(upgrades.value, gameState.upgrades);
-                            }
-                            if (gameState.boosts) {
-                                Object.assign(boosts.value, gameState.boosts);
-                            }
-                            if (gameState.friends) {
-                                friends.value = gameState.friends;
-                            }
-                            if (gameState.tasks) {
-                                tasks.value = gameState.tasks;
-                            }
-                            if (gameState.walletAddress) {
-                                walletAddress.value = gameState.walletAddress;
-                            }
-                        } catch (error) {
-                            console.error('Ошибка загрузки игры:', error);
-                        }
-                    }
-                }
-                
-                // Запуск игры
-                function startGame() {
-                    gameStarted.value = true;
-                    triggerHaptic('medium');
-                    startIntervals();
-                    saveGame();
-                }
-                
-                // Запуск интервалов
-                function startIntervals() {
-                    // Автомайнинг
-                    autoClickerInterval = setInterval(() => {
-                        if (autoClickers.value > 0) {
-                            let earned = autoClickers.value;
-                            
-                            // Применение бустеров автомайнинга
-                            Object.values(boosts.value).forEach(boost => {
-                                if (boost.expiresAt && boost.expiresAt > Date.now()) {
-                                    if (boost.effect.type === 'auto_multiplier') {
-                                        earned *= boost.effect.value;
-                                    }
+                            // Проверяем, не истекло ли время крипто-майнера
+                            if (cryptoMinerActive.value) {
+                                const now = Date.now();
+                                if (now > cryptoMinerEndTime.value) {
+                                    cryptoMinerActive.value = false;
                                 }
-                            });
-                            
-                            coins.value += earned;
+                            }
+                        } catch (e) {
+                            console.error('Ошибка загрузки сохранения:', e);
+                            resetGame();
                         }
-                    }, 1000);
+                    } else {
+                        resetGame();
+                    }
+                    
+                    const wallet = localStorage.getItem('timWallet');
+                    if (wallet) polygonWalletAddress.value = wallet;
+                }
+                
+                function resetGame() {
+                    coins.value = 0;
+                    profitPerTap.value = 1;
+                    autoClickers.value = 0;
+                    realTokens.value = 0;
+                    telegramStars.value = 0;
+                    isPremium.value = false;
+                    friends.value = [];
+                    upgrades.value = [
+                        { id: 1, name: 'Усилитель клика', description: '+1 TIM за клик', cost: 100, level: 0 },
+                        { id: 2, name: 'Автомайнер', description: '+1 TIM в минуту', cost: 500, level: 0 },
+                        { id: 3, name: 'Множитель', description: 'x2 доход от кликов', cost: 1000, level: 0 }
+                    ];
+                    cryptoMinerLevel.value = 0;
+                    cryptoMinerActive.value = false;
+                    cryptoMinerEndTime.value = 0;
+                    activePage.value = 'click';
+                }
+                
+                function startAutoClickers() {
+                    // Автокликеры
+                    setInterval(() => {
+                        if (autoClickers.value > 0) {
+                            coins.value += autoClickers.value;
+                        }
+                    }, 60000);
                     
                     // Автосохранение
-                    saveInterval = setInterval(() => {
-                        saveGame();
-                    }, 10000);
+                    setInterval(saveGame, 30000);
                     
-                    // Проверка бустеров
-                    boostCheckInterval = setInterval(() => {
-                        Object.values(boosts.value).forEach(boost => {
-                            if (boost.expiresAt && boost.expiresAt <= Date.now()) {
-                                boost.expiresAt = null;
-                            }
-                        });
+                    // Проверка крипто-майнера каждую секунду
+                    setInterval(() => {
+                        if (cryptoMinerActive.value && cryptoMinerTimeLeft.value <= 0) {
+                            cryptoMinerActive.value = false;
+                        }
                     }, 1000);
                 }
                 
-                // Остановка интервалов
-                function stopIntervals() {
-                    if (autoClickerInterval) clearInterval(autoClickerInterval);
-                    if (saveInterval) clearInterval(saveInterval);
-                    if (boostCheckInterval) clearInterval(boostCheckInterval);
-                }
-                
-                // Инициализация
                 onMounted(() => {
-                    // Инициализация Telegram WebApp
-                    if (tg) {
+                    if (window.Telegram?.WebApp) {
+                        const tg = window.Telegram.WebApp;
                         tg.ready();
                         tg.expand();
+                        
+                        const user = tg.initDataUnsafe?.user;
+                        if (user) {
+                            userId.value = 'user_' + user.id;
+                        }
                     }
                     
-                    // Загрузка сохраненной игры
                     loadGame();
+                    startAutoClickers();
                     
-                    // Автозапуск для возвращающихся игроков
-                    const hasPlayed = localStorage.getItem('timClickerGame');
-                    if (hasPlayed) {
-                        gameStarted.value = true;
-                        startIntervals();
-                    }
-                    
-                    // Имитация загрузки
-                    setTimeout(() => {
-                        isReady.value = true;
-                    }, 1500);
-                });
-                
-                onUnmounted(() => {
-                    stopIntervals();
-                    saveGame();
+                    setTimeout(() => isReady.value = true, 1000);
                 });
                 
                 return {
-                    // Состояние
                     isReady,
-                    gameStarted,
                     coins,
                     profitPerTap,
                     autoClickers,
-                    clickEffect,
-                    activeTab,
-                    isShaking,
-                    showLightning,
-                    showGoldRain,
-                    goldCoins,
-                    energyRings,
-                    
-                    // Кошелек
-                    walletAddress,
-                    newWalletAddress,
-                    showWallet,
+                    activePage,
+                    fullscreenPage,
+                    realTokens,
+                    polygonWalletAddress,
+                    polygonWalletInput,
+                    convertAmount,
                     withdrawAmount,
-                    
-                    // Друзья
                     friends,
-                    showFriendModal,
-                    newFriendName,
-                    
-                    // Данные игры
+                    userId,
+                    telegramStars,
+                    isPremium,
+                    notification,
                     upgrades,
-                    boosts,
-                    tasks,
+                    cryptoMinerLevel,
+                    cryptoMinerActive,
+                    cryptoMinerChance,
+                    cryptoEffects,
+                    cryptoMinerTimeLeft,
                     
-                    // Вычисляемые свойства
-                    shortWalletAddress,
                     totalFriendBonus,
-                    canWithdraw,
-                    
-                    // Методы
+                    isValidWallet,
+                    currentCryptoChance,
                     formatNumber,
-                    startClickEffect,
-                    endClickEffect,
+                    
                     mine,
-                    purchaseUpgrade,
-                    activateBoost,
-                    isBoostActive,
-                    getBoostTimeRemaining,
-                    inviteFriend,
+                    buyUpgrade,
+                    activateCryptoMiner,
+                    generateInvite,
+                    copyReferral,
+                    claimFriendBonus,
                     addFriend,
-                    claimFriendReward,
-                    completeTask,
-                    showWalletModal,
-                    updateWallet,
+                    convertTokens,
+                    withdrawTokens,
+                    saveWallet,
                     copyWallet,
-                    withdrawFunds,
-                    startGame
+                    buyStars,
+                    buyTimForStars,
+                    playGame,
+                    setPage,
+                    openFullscreen,
+                    closeFullscreen,
+                    showNotify
                 };
             }
         }).mount('#app');
