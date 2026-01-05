@@ -7,7 +7,6 @@
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* Стили остаются без изменений */
         :root {
             --tim-blue: #00C8FF; --dark-bg: #111; --dark-light: #222; --text-white: #fff; --text-light: #ccc;
             --success: #66bb6a; --error: #ff6b6b; --premium: #ffd700; --crypto: #8B5CF6; --ad-color: #FF6B35;
@@ -285,10 +284,10 @@
                 <div class="bonus-info">
                     <div class="card-title" style="color: var(--success); font-size: 14px;">🎁 Бонусы за друзей:</div>
                     <ul class="bonus-list">
-                        <li><strong>1-5 друзей:</strong> 50K TIM</li>
-                        <li><strong>6+ друзей:</strong> 10K TIM</li>
+                        <li><strong>1-5 друзей:</strong> 10K TIM</li>
+                        <li><strong>6+ друзей:</strong> 5K TIM</li>
                         <li><strong>Пассивно:</strong> 1% от дохода друга</li>
-                        <li><strong>1M TIM у друга:</strong> +10K бонус</li>
+                        <li><strong>1M TIM у друга:</strong> +5K бонус</li>
                     </ul>
                 </div>
 
@@ -370,8 +369,7 @@
                             Через: {{ formatTime(ads.hourly.cooldown) }}
                         </div>
                         <div class="card-desc" v-else>
-                            Награда: {{ formatNumber(ads.hourly.reward) }} TIM
-                        </div>
+                            Награда: {{ formatNumber(ads.hourly.reward) }} TIM</div>
                     </div>
                     <div class="grid-card ad-card" @click="watchAd('big')">
                         <div class="card-title" style="color: var(--ad-color);">🎁 Большая</div>
@@ -627,7 +625,7 @@
                     // Добавляем метаданные
                     const saveData = {
                         ...gameData,
-                        version: '1.2.0',
+                        version: '1.3.0',
                         saveTimestamp: Date.now(),
                         saveCount: (gameData.saveCount || 0) + 1
                     };
@@ -777,10 +775,10 @@
                     return 100000 + (cryptoMinerLevel.value * 50000);
                 });
                 
-                // Форматирование чисел - ИСПРАВЛЕНА ОШИБКА
+                // Форматирование чисел
                 function formatNumber(num) {
                     if (num >= 1000000000) return (num / 1000000000).toFixed(2) + 'B';
-                    if (num >= 1000000) return (num / 1000000).toFixed(2) + 'M'; // ИСПРАВЛЕНО
+                    if (num >= 1000000) return (num / 1000000).toFixed(2) + 'M';
                     if (num >= 1000) return (num / 1000).toFixed(2) + 'K';
                     return Math.floor(num);
                 }
@@ -807,7 +805,7 @@
                     setTimeout(() => adEffects.value.shift(), 2000);
                 }
                 
-                // Расчет офлайн заработка - ИСПРАВЛЕНА ЛОГИКА
+                // Расчет офлайн заработка
                 function calculateOfflineEarnings() {
                     const now = Date.now();
                     const timeDiff = now - lastSaveTime.value;
@@ -840,7 +838,7 @@
                 // Основные игровые функции
                 function mine() {
                     const now = Date.now();
-                    const clickCooldown = 100;
+                    const clickCooldown = 550; // ИСПРАВЛЕНО: увеличен кулдаун кликов с 300 до 550 мс
                     
                     // Проверка кулдауна
                     if (now - lastClickTime.value < clickCooldown) return;
@@ -992,11 +990,12 @@
                     const friend = friends.value.find(f => f.id === friendId);
                     if (!friend || friend.bonusClaimed) return;
                     
+                    // ИСПРАВЛЕНО: уменьшены бонусы за друзей
                     let bonus = 0;
                     if (friends.value.length <= 5) {
-                        bonus = 50000;
+                        bonus = 10000; // Было 50000
                     } else {
-                        bonus = 10000;
+                        bonus = 5000; // Было 10000
                     }
                     
                     coins.value += bonus;
@@ -1008,6 +1007,8 @@
                 }
                 
                 function addFriend(name) {
+                    // ИСПРАВЛЕНО: убрано автоматическое добавление себя в друзья
+                    // Функция остается только для тестирования
                     const level = Math.floor(Math.random() * 10) + 1;
                     const passiveIncome = (Math.random() * 0.5 + 0.1) * level;
                     
@@ -1024,11 +1025,12 @@
                     
                     friends.value.push(newFriend);
                     
+                    // ИСПРАВЛЕНО: уменьшен бонус за достижение 1M TIM
                     if (newFriend.coins >= 1000000) {
                         setTimeout(() => {
-                            coins.value += 10000;
-                            totalReferralEarnings.value += 10000;
-                            showNotify(`🎊 Ваш друг ${newFriend.name} достиг 1M TIM! Вы получаете 10,000 TIM бонуса!`, 'premium');
+                            coins.value += 5000; // Было 10000
+                            totalReferralEarnings.value += 5000; // Было 10000
+                            showNotify(`🎊 Ваш друг ${newFriend.name} достиг 1M TIM! Вы получаете 5,000 TIM бонуса!`, 'premium');
                             saveGame();
                         }, 2000);
                     }
@@ -1435,12 +1437,8 @@
                                 localStorage.setItem('tim_user_id', telegramId);
                             }
                             
-                            // Устанавливаем имя пользователя для демо
-                            setTimeout(() => {
-                                if (friends.value.length === 0) {
-                                    addFriend(user.first_name || 'Telegram User');
-                                }
-                            }, 1000);
+                            // ИСПРАВЛЕНО: убрано автоматическое добавление себя в друзья
+                            // Теперь друзья добавляются только через реферальную систему
                         }
                     }
                     
