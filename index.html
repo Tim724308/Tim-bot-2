@@ -7,6 +7,7 @@
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
+        /* Стили остаются без изменений */
         :root {
             --tim-blue: #00C8FF; --dark-bg: #111; --dark-light: #222; --text-white: #fff; --text-light: #ccc;
             --success: #66bb6a; --error: #ff6b6b; --premium: #ffd700; --crypto: #8B5CF6; --ad-color: #FF6B35;
@@ -733,8 +734,6 @@
                 const adEffects = ref([]);
                 const notification = ref({ show: false, message: '', type: 'success' });
                 const lastClickTime = ref(0);
-                const clickTimes = ref([]); // Для отслеживания кликов
-                const clickCooldown = 100;
                 const upgrades = ref([
                     { id: 1, name: 'Усилитель клика', description: '+0.5 TIM за клик', cost: 1000, level: 0 },
                     { id: 2, name: 'Автомайнер', description: '+5 TIM в минуту', cost: 5000, level: 0 },
@@ -778,10 +777,10 @@
                     return 100000 + (cryptoMinerLevel.value * 50000);
                 });
                 
-                // Форматирование чисел
+                // Форматирование чисел - ИСПРАВЛЕНА ОШИБКА
                 function formatNumber(num) {
                     if (num >= 1000000000) return (num / 1000000000).toFixed(2) + 'B';
-                    if (num >= 1000000) return (num / 1000000000).toFixed(2) + 'M';
+                    if (num >= 1000000) return (num / 1000000).toFixed(2) + 'M'; // ИСПРАВЛЕНО
                     if (num >= 1000) return (num / 1000).toFixed(2) + 'K';
                     return Math.floor(num);
                 }
@@ -808,7 +807,7 @@
                     setTimeout(() => adEffects.value.shift(), 2000);
                 }
                 
-                // Расчет офлайн заработка
+                // Расчет офлайн заработка - ИСПРАВЛЕНА ЛОГИКА
                 function calculateOfflineEarnings() {
                     const now = Date.now();
                     const timeDiff = now - lastSaveTime.value;
@@ -820,8 +819,8 @@
                     // Преобразуем в минуты
                     const minutesOffline = effectiveTime / (1000 * 60);
                     
-                    // Рассчитываем заработок
-                    const earnings = Math.floor(offlineIncomePerMinute.value * minutesOffline);
+                    // Рассчитываем заработок (авто-кликеры работают раз в минуту)
+                    const earnings = Math.floor(autoClickers.value * minutesOffline);
                     
                     // Лимит на офлайн заработок
                     const maxOfflineEarnings = 1000000;
@@ -841,6 +840,7 @@
                 // Основные игровые функции
                 function mine() {
                     const now = Date.now();
+                    const clickCooldown = 100;
                     
                     // Проверка кулдауна
                     if (now - lastClickTime.value < clickCooldown) return;
@@ -1255,37 +1255,43 @@
                             }
                             
                             // Обновляем время кулдаунов рекламы
-                            if (ads.value.daily.lastWatch) {
-                                const timeSinceDaily = Math.floor((now - ads.value.daily.lastWatch) / 1000);
-                                if (timeSinceDaily >= 24 * 60 * 60) {
-                                    ads.value.daily.available = true;
-                                    ads.value.daily.watchedToday = 0;
-                                    ads.value.daily.cooldown = 0;
-                                } else if (ads.value.daily.watchedToday >= 3) {
-                                    ads.value.daily.available = false;
-                                    ads.value.daily.cooldown = 24 * 60 * 60 - timeSinceDaily;
+                            const updateAdCooldowns = () => {
+                                const now = Date.now();
+                                
+                                if (ads.value.daily.lastWatch) {
+                                    const timeSinceDaily = Math.floor((now - ads.value.daily.lastWatch) / 1000);
+                                    if (timeSinceDaily >= 24 * 60 * 60) {
+                                        ads.value.daily.available = true;
+                                        ads.value.daily.watchedToday = 0;
+                                        ads.value.daily.cooldown = 0;
+                                    } else if (ads.value.daily.watchedToday >= 3) {
+                                        ads.value.daily.available = false;
+                                        ads.value.daily.cooldown = 24 * 60 * 60 - timeSinceDaily;
+                                    }
                                 }
-                            }
+                                
+                                if (ads.value.hourly.lastWatch) {
+                                    const timeSinceHourly = Math.floor((now - ads.value.hourly.lastWatch) / 1000);
+                                    if (timeSinceHourly >= 60 * 60) {
+                                        ads.value.hourly.available = true;
+                                        ads.value.hourly.cooldown = 0;
+                                    } else {
+                                        ads.value.hourly.available = false;
+                                        ads.value.hourly.cooldown = 60 * 60 - timeSinceHourly;
+                                    }
+                                }
+                                
+                                if (ads.value.big.lastWatch) {
+                                    const timeSinceBig = Math.floor((now - ads.value.big.lastWatch) / 1000);
+                                    if (timeSinceBig >= 24 * 60 * 60) {
+                                        ads.value.big.available = true;
+                                    } else {
+                                        ads.value.big.available = false;
+                                    }
+                                }
+                            };
                             
-                            if (ads.value.hourly.lastWatch) {
-                                const timeSinceHourly = Math.floor((now - ads.value.hourly.lastWatch) / 1000);
-                                if (timeSinceHourly >= 60 * 60) {
-                                    ads.value.hourly.available = true;
-                                    ads.value.hourly.cooldown = 0;
-                                } else {
-                                    ads.value.hourly.available = false;
-                                    ads.value.hourly.cooldown = 60 * 60 - timeSinceHourly;
-                                }
-                            }
-                            
-                            if (ads.value.big.lastWatch) {
-                                const timeSinceBig = Math.floor((now - ads.value.big.lastWatch) / 1000);
-                                if (timeSinceBig >= 24 * 60 * 60) {
-                                    ads.value.big.available = true;
-                                } else {
-                                    ads.value.big.available = false;
-                                }
-                            }
+                            updateAdCooldowns();
                             
                             // Рассчитываем офлайн заработок
                             const offlineEarningsCalculated = calculateOfflineEarnings();
@@ -1419,13 +1425,21 @@
                         tg.expand();
                         const user = tg.initDataUnsafe?.user;
                         if (user) {
-                            // Используем Telegram ID как часть user ID
-                            userId.value = `tg_${user.id}_${Date.now()}`;
-                            localStorage.setItem('tim_user_id', userId.value);
+                            // Используем Telegram ID для сохранения, но не перезаписываем существующий
+                            const telegramId = `tg_${user.id}`;
+                            const existingId = localStorage.getItem('tim_user_id');
+                            
+                            // Если у пользователя уже есть сохранение, не меняем ID
+                            if (!existingId || !existingId.includes('tg_')) {
+                                userId.value = telegramId;
+                                localStorage.setItem('tim_user_id', telegramId);
+                            }
                             
                             // Устанавливаем имя пользователя для демо
                             setTimeout(() => {
-                                addFriend(user.first_name || 'Telegram User');
+                                if (friends.value.length === 0) {
+                                    addFriend(user.first_name || 'Telegram User');
+                                }
                             }, 1000);
                         }
                     }
@@ -1457,13 +1471,6 @@
                             }
                         }
                     });
-                    
-                    // Сохраняем игру при закрытии телеграмм мини-приложения
-                    if (window.Telegram?.WebApp) {
-                        window.Telegram.WebApp.onEvent('viewportChanged', () => {
-                            saveGame();
-                        });
-                    }
                 });
                 
                 return {
