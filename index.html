@@ -99,25 +99,25 @@
         .notification.premium { background: var(--premium); color: black; }
         .notification.crypto { background: var(--crypto); color: white; } .notification.ad { background: var(--ad-color); color: white; }
         .friend-card {
-            background: var(--dark-light); padding: 12px; margin: 8px 0; border-radius: 10px;
-            border-left: 4px solid var(--success); display: flex; justify-content: space-between; align-items: center;
+            background: var(--dark-light); padding: 10px; margin: 6px 0; border-radius: 10px;
+            border-left: 3px solid var(--success); display: flex; justify-content: space-between; align-items: center;
         }
         .friend-info { text-align: left; flex: 1; }
-        .friend-name { font-weight: bold; color: var(--text-white); margin-bottom: 4px; font-size: 14px; }
-        .friend-bonus { color: var(--success); font-size: 13px; }
+        .friend-name { font-weight: bold; color: var(--text-white); font-size: 12px; margin-bottom: 2px; }
+        .friend-bonus { color: var(--success); font-size: 11px; }
         .friend-btn {
-            background: var(--success); color: white; border: none; padding: 6px 12px; border-radius: 5px;
-            cursor: pointer; font-weight: bold; font-size: 13px;
+            background: var(--success); color: white; border: none; padding: 4px 8px; border-radius: 5px;
+            cursor: pointer; font-weight: bold; font-size: 11px; min-width: 60px;
         }
         .referral-link, .wallet-address {
-            background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px; font-family: monospace;
-            word-break: break-all; margin: 10px 0; cursor: pointer; font-size: 13px;
+            background: rgba(255,255,255,0.1); padding: 8px; border-radius: 8px; font-family: monospace;
+            word-break: break-all; margin: 10px 0; cursor: pointer; font-size: 11px;
         }
         .page { display: none; }
         .page.active { display: block; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .page-header { display: flex; align-items: center; justify-content: center; margin-bottom: 20px; gap: 12px; }
-        .page-title { font-size: 1.5rem; color: var(--tim-blue); font-weight: bold; text-align: center; }
+        .page-header { display: flex; align-items: center; justify-content: center; margin-bottom: 15px; gap: 10px; }
+        .page-title { font-size: 1.3rem; color: var(--tim-blue); font-weight: bold; text-align: center; }
         .fullscreen-page {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--dark-bg); z-index: 200;
             padding: 20px; overflow-y: auto; display: none;
@@ -126,18 +126,18 @@
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         .fullscreen-content { max-width: 500px; margin: 0 auto; padding-top: 60px; }
         .mrt-badge {
-            background: linear-gradient(45deg, #8B5CF6, #6366F1); color: white; padding: 3px 8px;
-            border-radius: 4px; font-size: 11px; font-weight: bold; margin-left: 5px;
+            background: linear-gradient(45deg, #8B5CF6, #6366F1); color: white; padding: 2px 6px;
+            border-radius: 4px; font-size: 10px; font-weight: bold; margin-left: 5px;
         }
         /* Крипто-майнер */
         .crypto-card { background: rgba(139, 92, 246, 0.1); border: 2px solid var(--crypto); position: relative; }
-        .crypto-card::before { content: "💰"; position: absolute; top: 10px; right: 10px; font-size: 18px; }
+        .crypto-card::before { content: "💰"; position: absolute; top: 10px; right: 10px; font-size: 16px; }
         .chance-display, .ad-timer {
-            background: rgba(0, 0, 0, 0.3); padding: 4px 8px; border-radius: 20px; font-size: 11px;
-            margin-top: 5px; color: var(--crypto); font-weight: bold;
+            background: rgba(0, 0, 0, 0.3); padding: 3px 6px; border-radius: 20px; font-size: 10px;
+            margin-top: 4px; color: var(--crypto); font-weight: bold;
         }
         .crypto-effect, .ad-effect {
-            position: fixed; font-size: 22px; font-weight: bold; z-index: 1002; pointer-events: none;
+            position: fixed; font-size: 20px; font-weight: bold; z-index: 1002; pointer-events: none;
             animation: float 2s ease-out forwards;
         }
         .crypto-effect { color: var(--crypto); } .ad-effect { color: var(--ad-color); }
@@ -148,52 +148,68 @@
         }
         /* Реклама */
         .ad-card { background: rgba(255, 107, 53, 0.1); border: 2px solid var(--ad-color); position: relative; }
-        .ad-card::before { content: "📺"; position: absolute; top: 10px; right: 10px; font-size: 18px; }
+        .ad-card::before { content: "📺"; position: absolute; top: 10px; right: 10px; font-size: 16px; }
         .ad-timer { color: var(--ad-color); }
-        .ad-watch-progress { width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; margin-top: 10px; overflow: hidden; }
+        .ad-watch-progress { width: 100%; height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px; margin-top: 8px; overflow: hidden; }
         .ad-watch-fill { height: 100%; background: var(--ad-color); transition: width 0.3s ease; }
         /* Telegram Stars - единый стиль */
-        .stars-section { background: var(--dark-light); padding: 15px; border-radius: 10px; margin: 10px 0; border: 2px solid var(--premium); }
-        .stars-balance { text-align: center; margin-bottom: 20px; }
-        .balance-amount { font-size: 32px; font-weight: bold; color: var(--premium); margin: 10px 0; }
-        .balance-label { color: var(--text-light); font-size: 14px; }
-        .stars-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 15px 0; }
+        .stars-section { background: var(--dark-light); padding: 12px; border-radius: 10px; margin: 8px 0; border: 2px solid var(--premium); }
+        .stars-balance { text-align: center; margin-bottom: 15px; }
+        .balance-amount { font-size: 28px; font-weight: bold; color: var(--premium); margin: 8px 0; }
+        .balance-label { color: var(--text-light); font-size: 12px; }
+        .stars-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin: 12px 0; }
         .stars-package {
             background: rgba(255, 215, 0, 0.1); border: 1px solid var(--premium); border-radius: 8px;
-            padding: 12px; cursor: pointer; transition: all 0.2s; text-align: center;
+            padding: 10px; cursor: pointer; transition: all 0.2s; text-align: center;
         }
         .stars-package:hover { transform: translateY(-2px); background: rgba(255, 215, 0, 0.15); }
-        .stars-icon { font-size: 22px; margin-bottom: 4px; }
-        .stars-count { font-size: 16px; font-weight: bold; color: var(--premium); }
+        .stars-icon { font-size: 20px; margin-bottom: 3px; }
+        .stars-count { font-size: 14px; font-weight: bold; color: var(--premium); }
         /* TIM за звезды - такой же стиль как пополнение баланса */
-        .tim-packages-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 15px 0; }
+        .tim-packages-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin: 12px 0; }
         .tim-package-compact {
             background: rgba(0, 200, 255, 0.1); border: 1px solid var(--tim-blue); border-radius: 8px;
-            padding: 12px; cursor: pointer; transition: all 0.2s; text-align: center;
+            padding: 10px; cursor: pointer; transition: all 0.2s; text-align: center;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
         .tim-package-compact:hover { transform: translateY(-2px); background: rgba(0, 200, 255, 0.15); }
-        .tim-cost { font-size: 18px; font-weight: bold; color: var(--premium); display: flex; align-items: center; justify-content: center; gap: 5px; margin-bottom: 5px; }
-        .tim-reward { font-size: 16px; font-weight: bold; color: var(--tim-blue); margin-bottom: 3px; }
-        .tim-benefit { font-size: 11px; color: var(--text-light); }
+        .tim-cost { font-size: 16px; font-weight: bold; color: var(--premium); display: flex; align-items: center; justify-content: center; gap: 4px; margin-bottom: 4px; }
+        .tim-reward { font-size: 14px; font-weight: bold; color: var(--tim-blue); margin-bottom: 2px; }
+        .tim-benefit { font-size: 10px; color: var(--text-light); }
         .section-title {
-            color: var(--tim-blue); font-weight: bold; font-size: 1.2rem; margin-bottom: 15px;
-            text-align: center; display: flex; align-items: center; justify-content: center; gap: 10px;
+            color: var(--tim-blue); font-weight: bold; font-size: 1.1rem; margin-bottom: 12px;
+            text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px;
         }
-        /* Дополнительные стили для друзей */
+        /* Дополнительные стили для друзей - оптимизированные */
         .bonus-info {
             background: rgba(102, 187, 106, 0.1); border: 1px solid var(--success); border-radius: 8px;
-            padding: 12px; margin: 10px 0; text-align: left;
+            padding: 10px; margin: 8px 0; text-align: left;
         }
-        .bonus-list { margin: 10px 0; padding-left: 20px; }
-        .bonus-list li { margin: 5px 0; font-size: 13px; color: var(--text-light); }
+        .bonus-list { margin: 8px 0; padding-left: 18px; }
+        .bonus-list li { margin: 3px 0; font-size: 11px; color: var(--text-light); line-height: 1.3; }
         .referral-stats {
-            display: flex; justify-content: space-between; margin: 15px 0;
-            background: rgba(0, 200, 255, 0.1); padding: 10px; border-radius: 8px;
+            display: flex; justify-content: space-between; margin: 12px 0;
+            background: rgba(0, 200, 255, 0.1); padding: 8px; border-radius: 8px;
         }
         .stat-item { text-align: center; flex: 1; }
-        .stat-value { font-size: 18px; font-weight: bold; color: var(--tim-blue); }
-        .stat-label { font-size: 11px; color: var(--text-light); margin-top: 3px; }
+        .stat-value { font-size: 16px; font-weight: bold; color: var(--tim-blue); }
+        .stat-label { font-size: 10px; color: var(--text-light); margin-top: 2px; }
+        /* Стиль для офлайн заработка */
+        .offline-earnings {
+            background: rgba(0, 200, 255, 0.1); border: 1px solid var(--tim-blue); border-radius: 10px;
+            padding: 10px; margin: 8px 0; text-align: center; cursor: pointer;
+        }
+        .offline-earnings .card-title { color: var(--tim-blue); font-weight: bold; font-size: 14px; }
+        .offline-earnings .card-desc { color: var(--text-light); font-size: 11px; }
+        /* Компактные стили для страницы друзей */
+        .compact-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 15px 0; }
+        .compact-card {
+            background: var(--dark-light); padding: 12px; border-radius: 8px; cursor: pointer;
+            border: 2px solid var(--tim-blue); text-align: center; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; min-height: 90px;
+        }
+        .compact-card .card-title { color: var(--tim-blue); font-weight: bold; font-size: 13px; margin-bottom: 4px; }
+        .compact-card .card-desc { color: var(--text-light); font-size: 10px; line-height: 1.2; }
     </style>
 </head>
 <body>
@@ -204,6 +220,13 @@
         </div>
 
         <div class="game-interface" v-if="isReady">
+            <!-- Офлайн заработок -->
+            <div v-if="offlineEarnings > 0" class="offline-earnings" @click="claimOfflineEarnings">
+                <div class="card-title">💰 Офлайн заработок</div>
+                <div class="card-desc">Пока вас не было: +{{ formatNumber(offlineEarnings) }} TIM</div>
+                <div class="card-desc" style="font-size: 9px; color: var(--tim-blue);">Нажмите, чтобы забрать</div>
+            </div>
+
             <div class="top-stats">
                 <div class="tim-balance">
                     <div class="tim-amount">{{ formatNumber(coins) }}</div>
@@ -227,65 +250,63 @@
 
             <!-- Порядок вкладок: друзья → улучшения → кликер → реклама → токены -->
             <div class="page" :class="{active: activePage === 'friends'}">
-                <div class="card">
-                    <div class="card-title">🤝 Пригласите друзей</div>
-                    <div class="card-desc">Зарабатывайте TIM за каждого приведенного друга!</div>
-                    
-                    <div class="referral-stats">
-                        <div class="stat-item">
-                            <div class="stat-value">{{ friends.length }}</div>
-                            <div class="stat-label">Друзей</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value">{{ formatNumber(totalReferralEarnings) }}</div>
-                            <div class="stat-label">Заработано</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value">{{ formatNumber(totalPassiveEarnings) }}/день</div>
-                            <div class="stat-label">Пассивно</div>
-                        </div>
+                <!-- Компактная статистика -->
+                <div class="referral-stats">
+                    <div class="stat-item">
+                        <div class="stat-value">{{ friends.length }}</div>
+                        <div class="stat-label">Друзей</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">{{ formatNumber(totalReferralEarnings) }}</div>
+                        <div class="stat-label">Заработано</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">+{{ totalPassiveEarnings.toFixed(1) }}</div>
+                        <div class="stat-label">TIM/клик</div>
                     </div>
                 </div>
 
-                <div class="grid-layout">
-                    <div class="grid-card" @click="generateInvite">
-                        <div style="font-size: 28px;">📤</div>
-                        <div class="card-title">Пригласить друга</div>
-                        <div class="card-desc">Получите бонус за каждого друга</div>
+                <!-- Компактные кнопки действий -->
+                <div class="compact-grid">
+                    <div class="compact-card" @click="generateInvite">
+                        <div style="font-size: 24px;">📤</div>
+                        <div class="card-title">Пригласить</div>
+                        <div class="card-desc">Получить бонус</div>
                     </div>
-                    <div class="grid-card" @click="copyReferral">
-                        <div style="font-size: 28px;">🔗</div>
-                        <div class="card-title">Реферальная ссылка</div>
-                        <div class="card-desc">Скопировать ссылку</div>
+                    <div class="compact-card" @click="copyReferral">
+                        <div style="font-size: 24px;">🔗</div>
+                        <div class="card-title">Ссылка</div>
+                        <div class="card-desc">Скопировать</div>
                     </div>
                 </div>
 
+                <!-- Компактная информация о бонусах -->
                 <div class="bonus-info">
-                    <div class="card-title" style="color: var(--success);">🎁 Система бонусов:</div>
+                    <div class="card-title" style="color: var(--success); font-size: 14px;">🎁 Бонусы за друзей:</div>
                     <ul class="bonus-list">
-                        <li><strong>Первые 5 друзей:</strong> 50,000 TIM сразу</li>
-                        <li><strong>С 6-го друга:</strong> 10,000 TIM сразу</li>
-                        <li><strong>Пассивный доход:</strong> 1% от дохода друга за клики</li>
-                        <li><strong>Достижение 1M TIM:</strong> +10,000 TIM бонус</li>
+                        <li><strong>1-5 друзей:</strong> 50K TIM</li>
+                        <li><strong>6+ друзей:</strong> 10K TIM</li>
+                        <li><strong>Пассивно:</strong> 1% от дохода друга</li>
+                        <li><strong>1M TIM у друга:</strong> +10K бонус</li>
                     </ul>
                 </div>
 
+                <!-- Компактный список друзей -->
                 <div v-if="friends.length > 0">
-                    <div class="card">
-                        <div class="card-title">👥 Ваши друзья ({{ friends.length }})</div>
-                        <div class="card-desc">Общий пассивный доход: +{{ totalPassiveEarnings.toFixed(1) }} TIM/клик</div>
+                    <div style="text-align: left; margin: 10px 0;">
+                        <div style="color: var(--tim-blue); font-weight: bold; font-size: 14px;">👥 Друзья ({{ friends.length }})</div>
+                        <div style="color: var(--text-light); font-size: 11px;">Пассивный доход: +{{ totalPassiveEarnings.toFixed(1) }} TIM/клик</div>
                     </div>
                     <div v-for="friend in friends" :key="friend.id" class="friend-card">
                         <div class="friend-info">
                             <div class="friend-name">{{ friend.name }}</div>
-                            <div class="card-desc">Уровень: {{ friend.level }}</div>
-                            <div class="friend-bonus">Пассивно: +{{ friend.passiveIncome.toFixed(2) }} TIM/клик</div>
-                            <div v-if="friend.bonusClaimed" style="color: var(--success); font-size: 11px;">Бонус получен</div>
+                            <div style="color: var(--text-light); font-size: 10px;">Ур. {{ friend.level }}</div>
+                            <div class="friend-bonus">+{{ friend.passiveIncome.toFixed(2) }}/клик</div>
                         </div>
                         <button class="friend-btn" @click="claimFriendBonus(friend.id)" v-if="!friend.bonusClaimed && friend.canClaim">
                             Забрать
                         </button>
-                        <div v-else-if="friend.bonusClaimed" style="color: var(--success); font-weight: bold;">✅</div>
+                        <div v-else-if="friend.bonusClaimed" style="color: var(--success); font-weight: bold; font-size: 12px;">✅</div>
                     </div>
                 </div>
             </div>
@@ -331,10 +352,7 @@
             </div>
 
             <div class="page" :class="{active: activePage === 'ads'}">
-                <div class="card">
-                    <div class="card-title">📺 Рекламные награды</div>
-                    <div class="card-desc">Награды начисляются только после полного просмотра рекламы!</div>
-                </div>
+                <!-- Убрано верхнее информационное окно -->
                 
                 <div class="grid-layout">
                     <div class="grid-card ad-card" @click="watchAd('daily')">
@@ -368,21 +386,18 @@
                     </div>
                 </div>
                 
-                <div v-if="adWatching.active" class="card">
+                <div v-if="adWatching.active" class="card" style="padding: 12px; margin-top: 15px;">
                     <div class="card-title">📺 Смотрите рекламу...</div>
-                    <div class="card-desc">Не закрывайте игру! Награда будет начислена после полного просмотра.</div>
                     <div class="card-desc">Осталось: {{ adWatching.timeLeft }} сек.</div>
                     <div class="ad-watch-progress">
                         <div class="ad-watch-fill" :style="{width: adWatching.progress + '%'}"></div>
                     </div>
                 </div>
                 
-                <div class="card">
-                    <div class="card-title">💰 Всего заработано за рекламу</div>
-                    <div class="card-desc">{{ formatNumber(totalAdEarnings) }} TIM</div>
-                    <div class="card-desc" style="font-size: 12px; color: var(--ad-color);">
-                        ⚠️ Награды начисляются только после полного просмотра рекламы!
-                    </div>
+                <!-- Компактная статистика рекламы -->
+                <div class="card" style="padding: 12px; margin-top: 15px;">
+                    <div class="card-title" style="font-size: 14px;">💰 Всего за рекламу</div>
+                    <div class="card-desc" style="font-size: 16px; font-weight: bold; color: var(--ad-color);">{{ formatNumber(totalAdEarnings) }} TIM</div>
                 </div>
             </div>
 
@@ -583,23 +598,23 @@
         
         createApp({
             setup() {
-                // ВАЖНО: Все значения обнулены для нового пользователя
+                // Основные состояния
                 const isReady = ref(false);
-                const coins = ref(0); // Начинаем с 0
-                const profitPerTap = ref(1); // Базовый доход
-                const autoClickers = ref(0); // Нет автомайнеров
+                const coins = ref(0);
+                const profitPerTap = ref(1);
+                const autoClickers = ref(0);
                 const activePage = ref('click');
                 const fullscreenPage = ref('');
-                const realTokens = ref(0); // Нет токенов
+                const realTokens = ref(0);
                 const polygonWalletAddress = ref('');
                 const polygonWalletInput = ref('');
                 const convertAmount = ref('');
                 const withdrawAmount = ref('');
-                const friends = ref([]); // Пустой список друзей
-                const userId = ref('user_' + Math.random().toString(36).substr(2, 9));
-                const telegramStars = ref(0); // Нет звезд
-                const cryptoMinerLevel = ref(0); // Уровень 0
-                const cryptoMinerActive = ref(false); // Не активен
+                const friends = ref([]);
+                const userId = ref('');
+                const telegramStars = ref(0);
+                const cryptoMinerLevel = ref(0);
+                const cryptoMinerActive = ref(false);
                 const cryptoMinerEndTime = ref(0);
                 const cryptoMinerChance = ref(0.00001);
                 const cryptoEffects = ref([]);
@@ -622,10 +637,20 @@
                     { id: 3, name: 'Множитель', description: 'x1.5 доход от кликов', cost: 25000, level: 0 }
                 ]);
                 
+                // Новые состояния для офлайн заработка
+                const lastSaveTime = ref(Date.now());
+                const offlineEarnings = ref(0);
+                
+                // Вычисляемые свойства
                 const totalPassiveEarnings = computed(() => {
                     return friends.value.reduce((sum, friend) => {
                         return sum + friend.passiveIncome;
                     }, 0);
+                });
+                
+                // Офлайн доход в минуту (автокликеры)
+                const offlineIncomePerMinute = computed(() => {
+                    return autoClickers.value;
                 });
                 
                 const isValidWallet = computed(() => {
@@ -649,8 +674,8 @@
                 }
                 
                 function formatTime(seconds) {
-                    if (seconds >= 3600) return Math.floor(seconds / 3600) + 'ч ' + Math.floor((seconds % 3600) / 60) + 'м';
-                    if (seconds >= 60) return Math.floor(seconds / 60) + 'м ' + (seconds % 60) + 'с';
+                    if (seconds >= 3600) return Math.floor(seconds / 3600) + 'ч';
+                    if (seconds >= 60) return Math.floor(seconds / 60) + 'м';
                     return seconds + 'с';
                 }
                 
@@ -667,6 +692,31 @@
                 function addAdEffect(x, y, amount) {
                     adEffects.value.push({ x, y, amount });
                     setTimeout(() => adEffects.value.shift(), 2000);
+                }
+                
+                // Функция расчета офлайн заработка
+                function calculateOfflineEarnings() {
+                    const now = Date.now();
+                    const timeDiff = now - lastSaveTime.value;
+                    const minutesOffline = timeDiff / (1000 * 60);
+                    
+                    const maxOfflineMinutes = 1440;
+                    const effectiveMinutes = Math.min(minutesOffline, maxOfflineMinutes);
+                    
+                    const earnings = Math.floor(offlineIncomePerMinute.value * effectiveMinutes);
+                    
+                    return earnings;
+                }
+                
+                // Забрать офлайн заработок
+                function claimOfflineEarnings() {
+                    if (offlineEarnings.value > 0) {
+                        coins.value += offlineEarnings.value;
+                        showNotify(`💰 Получено ${formatNumber(offlineEarnings.value)} TIM офлайн заработка!`, 'success');
+                        offlineEarnings.value = 0;
+                        lastSaveTime.value = Date.now();
+                        saveGame();
+                    }
                 }
                 
                 function mine() {
@@ -928,25 +978,107 @@
                 
                 function saveGame() {
                     const gameData = {
-                        coins: coins.value, profitPerTap: profitPerTap.value, autoClickers: autoClickers.value,
-                        realTokens: realTokens.value, telegramStars: telegramStars.value, friends: friends.value,
-                        upgrades: upgrades.value, cryptoMinerLevel: cryptoMinerLevel.value,
-                        cryptoMinerActive: cryptoMinerActive.value, cryptoMinerEndTime: cryptoMinerEndTime.value,
-                        ads: ads.value, totalAdEarnings: totalAdEarnings.value, totalReferralEarnings: totalReferralEarnings.value,
-                        lastSave: Date.now()
+                        coins: coins.value, 
+                        profitPerTap: profitPerTap.value, 
+                        autoClickers: autoClickers.value,
+                        realTokens: realTokens.value, 
+                        telegramStars: telegramStars.value, 
+                        friends: friends.value,
+                        upgrades: upgrades.value, 
+                        cryptoMinerLevel: cryptoMinerLevel.value,
+                        cryptoMinerActive: cryptoMinerActive.value, 
+                        cryptoMinerEndTime: cryptoMinerEndTime.value,
+                        ads: ads.value, 
+                        totalAdEarnings: totalAdEarnings.value, 
+                        totalReferralEarnings: totalReferralEarnings.value,
+                        lastSaveTime: Date.now(),
+                        userId: userId.value
                     };
                     localStorage.setItem('timClickerSave', JSON.stringify(gameData));
                 }
                 
-                // ВАЖНО: Функция loadGame НЕ загружает сохраненные данные при старте
-                // Все значения остаются нулевыми для нового пользователя
                 function loadGame() {
-                    // Пропускаем загрузку сохраненной игры
-                    // Все значения уже инициализированы как нулевые
+                    const saved = localStorage.getItem('timClickerSave');
+                    const now = Date.now();
                     
-                    // Загружаем только кошелек из localStorage
+                    if (saved) {
+                        try {
+                            const gameData = JSON.parse(saved);
+                            
+                            if (gameData.userId === userId.value || !userId.value) {
+                                coins.value = gameData.coins || 0;
+                                profitPerTap.value = gameData.profitPerTap || 1;
+                                autoClickers.value = gameData.autoClickers || 0;
+                                realTokens.value = gameData.realTokens || 0;
+                                telegramStars.value = gameData.telegramStars || 0;
+                                friends.value = gameData.friends || [];
+                                upgrades.value = gameData.upgrades || upgrades.value;
+                                cryptoMinerLevel.value = gameData.cryptoMinerLevel || 0;
+                                cryptoMinerActive.value = gameData.cryptoMinerActive || false;
+                                cryptoMinerEndTime.value = gameData.cryptoMinerEndTime || 0;
+                                ads.value = gameData.ads || ads.value;
+                                totalAdEarnings.value = gameData.totalAdEarnings || 0;
+                                totalReferralEarnings.value = gameData.totalReferralEarnings || 0;
+                                lastSaveTime.value = gameData.lastSaveTime || now;
+                                
+                                userId.value = gameData.userId || userId.value;
+                                
+                                if (cryptoMinerActive.value && now > cryptoMinerEndTime.value) {
+                                    cryptoMinerActive.value = false;
+                                }
+                                
+                                const offlineEarningsCalculated = calculateOfflineEarnings();
+                                if (offlineEarningsCalculated > 0) {
+                                    offlineEarnings.value = offlineEarningsCalculated;
+                                }
+                                
+                                lastSaveTime.value = now;
+                                saveGame();
+                            } else {
+                                resetGame();
+                            }
+                        } catch (e) {
+                            console.error('Ошибка загрузки:', e);
+                            resetGame();
+                        }
+                    } else {
+                        resetGame();
+                    }
+                    
                     const wallet = localStorage.getItem('timWallet');
                     if (wallet) polygonWalletAddress.value = wallet;
+                }
+                
+                function resetGame() {
+                    userId.value = 'user_' + Math.random().toString(36).substr(2, 9);
+                    
+                    coins.value = 0; 
+                    profitPerTap.value = 1; 
+                    autoClickers.value = 0; 
+                    realTokens.value = 0;
+                    telegramStars.value = 0; 
+                    friends.value = []; 
+                    upgrades.value = [
+                        { id: 1, name: 'Усилитель клика', description: '+0.5 TIM за клик', cost: 1000, level: 0 },
+                        { id: 2, name: 'Автомайнер', description: '+5 TIM в минуту', cost: 5000, level: 0 },
+                        { id: 3, name: 'Множитель', description: 'x1.5 доход от кликов', cost: 25000, level: 0 }
+                    ];
+                    cryptoMinerLevel.value = 0; 
+                    cryptoMinerActive.value = false; 
+                    cryptoMinerEndTime.value = 0;
+                    ads.value = {
+                        daily: { available: true, reward: 50000, cooldown: 0, watchedToday: 0 },
+                        hourly: { available: true, reward: 10000, cooldown: 0 },
+                        big: { available: true, reward: 200000 },
+                        instant: { available: true, reward: 5000 }
+                    };
+                    totalAdEarnings.value = 0; 
+                    totalReferralEarnings.value = 0;
+                    offlineEarnings.value = 0;
+                    lastSaveTime.value = Date.now();
+                    activePage.value = 'click';
+                    
+                    saveGame();
                 }
                 
                 function startAutoClickers() {
@@ -957,7 +1089,9 @@
                         }
                     }, 60000);
                     
-                    setInterval(saveGame, 30000);
+                    setInterval(() => {
+                        saveGame();
+                    }, 30000);
                     
                     setInterval(() => {
                         if (cryptoMinerActive.value && cryptoMinerTimeLeft.value <= 0) {
@@ -985,17 +1119,18 @@
                 onMounted(() => {
                     document.addEventListener('gesturestart', e => e.preventDefault());
                     document.addEventListener('touchmove', e => { if (e.scale !== 1) e.preventDefault(); }, { passive: false });
+                    
                     if (window.Telegram?.WebApp) {
                         const tg = window.Telegram.WebApp;
-                        tg.ready(); tg.expand();
+                        tg.ready(); 
+                        tg.expand();
                         const user = tg.initDataUnsafe?.user;
-                        if (user) userId.value = 'user_' + user.id;
+                        if (user) {
+                            userId.value = 'tg_' + user.id;
+                        }
                     }
                     
-                    // Очищаем сохраненную игру для нового пользователя
-                    localStorage.removeItem('timClickerSave');
-                    
-                    loadGame(); // Загружаем только кошелек
+                    loadGame();
                     startAutoClickers();
                     setTimeout(() => isReady.value = true, 800);
                 });
@@ -1005,11 +1140,12 @@
                     polygonWalletAddress, polygonWalletInput, convertAmount, withdrawAmount, friends, userId,
                     telegramStars, cryptoMinerLevel, cryptoMinerActive, cryptoEffects, ads, adWatching,
                     adEffects, notification, upgrades, totalReferralEarnings, totalPassiveEarnings,
-                    totalAdEarnings,
+                    totalAdEarnings, offlineEarnings,
                     isValidWallet, cryptoMinerTimeLeft, cryptoMinerCost, currentCryptoChance,
                     formatNumber, formatTime, mine, buyUpgrade, activateCryptoMiner, watchAd, generateInvite,
                     copyReferral, claimFriendBonus, addFriend, convertTokens, withdrawTokens, saveWallet,
-                    copyWallet, buyStars, buyTimForStars, setPage, openFullscreen, closeFullscreen, showNotify
+                    copyWallet, buyStars, buyTimForStars, setPage, openFullscreen, closeFullscreen, showNotify,
+                    claimOfflineEarnings
                 };
             }
         }).mount('#app');
