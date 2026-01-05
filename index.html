@@ -7,7 +7,6 @@
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* Все существующие стили остаются без изменений */
         :root {
             --tim-blue: #00C8FF; --dark-bg: #111; --dark-light: #222; --text-white: #fff; --text-light: #ccc;
             --success: #66bb6a; --error: #ff6b6b; --premium: #ffd700; --crypto: #8B5CF6; --ad-color: #FF6B35;
@@ -768,30 +767,6 @@
                     console.error('Ошибка очистки:', error);
                     return false;
                 }
-            },
-            
-            // Получение списка всех сохранений (для отладки)
-            getAllSaves() {
-                const saves = {};
-                for (let i = 0; i < localStorage.length; i++) {
-                    const key = localStorage.key(i);
-                    if (key.startsWith('tim_clicker_save_')) {
-                        const userId = key.replace('tim_clicker_save_', '');
-                        try {
-                            const encrypted = localStorage.getItem(key);
-                            const data = this.decryptData(encrypted);
-                            if (data) {
-                                saves[userId] = {
-                                    ...data,
-                                    lastSave: new Date(data.saveTimestamp).toLocaleString()
-                                };
-                            }
-                        } catch (e) {
-                            console.warn('Ошибка чтения сохранения:', key);
-                        }
-                    }
-                }
-                return saves;
             }
         };
         
@@ -840,12 +815,8 @@
                 // Состояния для автосохранения и защиты
                 const lastSaveTime = ref(Date.now());
                 const offlineEarnings = ref(0);
-                const isSuspicious = ref(false);
-                const cheatDetection = ref({
-                    rapidActions: 0,
-                    lastRapidCheck: Date.now()
-                });
                 const saveCount = ref(0);
+                const hasShownWelcome = ref(false); // Флаг для показа приветствия один раз
                 
                 // Вычисляемые свойства
                 const totalPassiveEarnings = computed(() => {
@@ -1305,17 +1276,29 @@
                             realTokens: realTokens.value, 
                             telegramStars: telegramStars.value, 
                             friends: friends.value,
-                            upgrades: JSON.parse(JSON.stringify(upgrades.value)), // Глубокое копирование
+                            upgrades: upgrades.value.map(upgrade => ({
+                                id: upgrade.id,
+                                name: upgrade.name,
+                                description: upgrade.description,
+                                cost: upgrade.cost,
+                                level: upgrade.level
+                            })),
                             cryptoMinerLevel: cryptoMinerLevel.value,
                             cryptoMinerActive: cryptoMinerActive.value, 
                             cryptoMinerEndTime: cryptoMinerEndTime.value,
-                            ads: JSON.parse(JSON.stringify(ads.value)),
+                            ads: {
+                                daily: { ...ads.value.daily },
+                                hourly: { ...ads.value.hourly },
+                                big: { ...ads.value.big },
+                                instant: { ...ads.value.instant }
+                            },
                             totalAdEarnings: totalAdEarnings.value, 
                             totalReferralEarnings: totalReferralEarnings.value,
                             lastSaveTime: Date.now(),
                             userId: userId.value,
                             saveCount: saveCount.value + 1,
-                            polygonWalletAddress: polygonWalletAddress.value
+                            polygonWalletAddress: polygonWalletAddress.value,
+                            hasShownWelcome: hasShownWelcome.value
                         };
                         
                         // Сохраняем через StorageManager
@@ -1345,6 +1328,8 @@
                         const now = Date.now();
                         
                         if (gameData) {
+                            console.log('Игра загружена:', gameData);
+                            
                             // Загружаем основные данные
                             coins.value = gameData.coins || 0;
                             profitPerTap.value = gameData.profitPerTap || 1;
@@ -1355,7 +1340,13 @@
                             
                             // Загружаем улучшения
                             if (gameData.upgrades && gameData.upgrades.length === 3) {
-                                upgrades.value = gameData.upgrades;
+                                upgrades.value = gameData.upgrades.map(upgrade => ({
+                                    id: upgrade.id,
+                                    name: upgrade.name,
+                                    description: upgrade.description,
+                                    cost: upgrade.cost,
+                                    level: upgrade.level
+                                }));
                             }
                             
                             cryptoMinerLevel.value = gameData.cryptoMinerLevel || 0;
@@ -1364,13 +1355,17 @@
                             
                             // Загружаем рекламу
                             if (gameData.ads) {
-                                ads.value = gameData.ads;
+                                ads.value.daily = { ...ads.value.daily, ...gameData.ads.daily };
+                                ads.value.hourly = { ...ads.value.hourly, ...gameData.ads.hourly };
+                                ads.value.big = { ...ads.value.big, ...gameData.ads.big };
+                                ads.value.instant = { ...ads.value.instant, ...gameData.ads.instant };
                             }
                             
                             totalAdEarnings.value = gameData.totalAdEarnings || 0;
                             totalReferralEarnings.value = gameData.totalReferralEarnings || 0;
                             saveCount.value = gameData.saveCount || 0;
                             lastSaveTime.value = gameData.lastSaveTime || now;
+                            hasShownWelcome.value = gameData.hasShownWelcome || false;
                             
                             // Загружаем адрес кошелька
                             polygonWalletAddress.value = gameData.polygonWalletAddress || 
@@ -1420,12 +1415,27 @@
                                 offlineEarnings.value = offlineEarningsCalculated;
                             }
                             
-                            showNotify(`👋 Добро пожаловать обратно!`, 'success');
+                            // Показываем приветствие только если это первый вход
+                            if (!hasShownWelcome.value) {
+                                setTimeout(() => {
+                                    showNotify('👋 Добро пожаловать в Tim Clicker!', 'premium');
+                                    hasShownWelcome.value = true;
+                                    saveGame();
+                                }, 500);
+                            } else {
+                                setTimeout(() => {
+                                    showNotify(`👋 Добро пожаловать обратно! Ваш баланс: ${formatNumber(coins.value)} TIM`, 'success');
+                                }, 500);
+                            }
+                            
                             console.log('Игра загружена успешно. Сохранений:', saveCount.value);
                         } else {
-                            // Новый игрок
+                            // Новый игрок - показываем приветствие один раз
                             resetGame();
-                            showNotify('🎮 Новая игра начата!', 'premium');
+                            hasShownWelcome.value = true;
+                            setTimeout(() => {
+                                showNotify('🎮 Добро пожаловать в Tim Clicker! Начните кликать!', 'premium');
+                            }, 500);
                         }
                         
                         // Сразу сохраняем текущее состояние
@@ -1434,7 +1444,10 @@
                     } catch (error) {
                         console.error('Ошибка загрузки игры:', error);
                         resetGame();
-                        showNotify('⚠️ Ошибка загрузки, начата новая игра', 'error');
+                        hasShownWelcome.value = true;
+                        setTimeout(() => {
+                            showNotify('⚠️ Ошибка загрузки, начата новая игра', 'error');
+                        }, 500);
                     }
                 }
                 
@@ -1474,15 +1487,6 @@
                     
                     // Загружаем кошелек если есть
                     polygonWalletAddress.value = localStorage.getItem('tim_wallet_address') || '';
-                }
-                
-                // Функция для сброса прогресса (для отладки)
-                function resetProgress() {
-                    if (confirm('Вы уверены что хотите сбросить весь прогресс? Это действие нельзя отменить.')) {
-                        StorageManager.clearProgress(userId.value);
-                        resetGame();
-                        showNotify('Прогресс сброшен!', 'premium');
-                    }
                 }
                 
                 // Автоматические процессы
@@ -1551,7 +1555,12 @@
                     startGameLoops();
                     
                     // Показываем интерфейс
-                    setTimeout(() => isReady.value = true, 500);
+                    setTimeout(() => isReady.value = true, 800);
+                    
+                    // Сохраняем игру при закрытии/обновлении страницы
+                    window.addEventListener('beforeunload', () => {
+                        saveGame();
+                    });
                 });
                 
                 return {
