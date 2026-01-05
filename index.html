@@ -7,6 +7,7 @@
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
+        /* Все существующие стили остаются без изменений */
         :root {
             --tim-blue: #00C8FF; --dark-bg: #111; --dark-light: #222; --text-white: #fff; --text-light: #ccc;
             --success: #66bb6a; --error: #ff6b6b; --premium: #ffd700; --crypto: #8B5CF6; --ad-color: #FF6B35;
@@ -510,7 +511,7 @@
                 </div>
             </div>
 
-            <!-- Other Fullscreen Pages -->
+            <!-- Конвертация TIM в MRT -->
             <div class="fullscreen-page" :class="{active: fullscreenPage === 'convert'}">
                 <button class="btn-back" @click="closeFullscreen">←</button>
                 <div class="fullscreen-content">
@@ -530,6 +531,7 @@
                 </div>
             </div>
 
+            <!-- Вывод MRT токенов -->
             <div class="fullscreen-page" :class="{active: fullscreenPage === 'withdraw'}">
                 <button class="btn-back" @click="closeFullscreen">←</button>
                 <div class="fullscreen-content">
@@ -548,6 +550,7 @@
                 </div>
             </div>
 
+            <!-- Кошелек Polygon -->
             <div class="fullscreen-page" :class="{active: fullscreenPage === 'wallet'}">
                 <button class="btn-back" @click="closeFullscreen">←</button>
                 <div class="fullscreen-content">
@@ -579,13 +582,17 @@
             </div>
         </div>
 
+        <!-- Эффекты крипто-майнера -->
         <div v-for="(effect, index) in cryptoEffects" :key="index" 
              class="crypto-effect"
              :style="{left: effect.x + 'px', top: effect.y + 'px'}">+1 MRT</div>
+        
+        <!-- Эффекты рекламы -->
         <div v-for="(effect, index) in adEffects" :key="'ad-' + index" 
              class="ad-effect"
              :style="{left: effect.x + 'px', top: effect.y + 'px'}">+{{ formatNumber(effect.amount) }}</div>
 
+        <!-- Уведомления -->
         <div class="notification success" v-if="notification.show && notification.type === 'success'">{{ notification.message }}</div>
         <div class="notification error" v-if="notification.show && notification.type === 'error'">{{ notification.message }}</div>
         <div class="notification premium" v-if="notification.show && notification.type === 'premium'">{{ notification.message }}</div>
@@ -596,10 +603,28 @@
     <script>
         const { createApp, ref, computed, onMounted } = Vue;
         
-        // Система безопасности
-        const Security = {
-            // Простое кодирование данных (не криптографическое, но лучше чем ничего)
-            encode(data) {
+        // Улучшенная система сохранения прогресса
+        const StorageManager = {
+            // Генерация уникального ID пользователя
+            generateUserId() {
+                let userId = localStorage.getItem('tim_user_id');
+                if (!userId) {
+                    const timestamp = Date.now();
+                    const random = Math.random().toString(36).substr(2, 9);
+                    const userAgentHash = navigator.userAgent.length % 100;
+                    userId = `tim_user_${timestamp}_${random}_${userAgentHash}`;
+                    localStorage.setItem('tim_user_id', userId);
+                }
+                return userId;
+            },
+            
+            // Получение ключа для сохранения конкретного пользователя
+            getUserStorageKey(userId) {
+                return `tim_clicker_save_${userId}`;
+            },
+            
+            // Шифрование данных (базовое)
+            encryptData(data) {
                 try {
                     const json = JSON.stringify(data);
                     const timestamp = Date.now();
@@ -609,12 +634,13 @@
                     const reversed = encoded.split('').reverse().join('');
                     return reversed;
                 } catch (e) {
-                    console.error('Ошибка кодирования:', e);
+                    console.error('Ошибка шифрования:', e);
                     return '';
                 }
             },
             
-            decode(encoded) {
+            // Расшифровка данных
+            decryptData(encoded) {
                 try {
                     if (!encoded) return null;
                     const reversed = encoded.split('').reverse().join('');
@@ -634,12 +660,12 @@
                     
                     return data;
                 } catch (e) {
-                    console.error('Ошибка декодирования:', e);
+                    console.error('Ошибка расшифровки:', e);
                     return null;
                 }
             },
             
-            // Проверка целостности данных игры
+            // Валидация данных игры
             validateGameData(data) {
                 if (!data || typeof data !== 'object') return false;
                 
@@ -653,7 +679,7 @@
                 if (typeof data.coins !== 'number' || data.coins < 0 || data.coins > 1000000000000) return false;
                 if (typeof data.profitPerTap !== 'number' || data.profitPerTap < 0 || data.profitPerTap > 1000000) return false;
                 if (typeof data.autoClickers !== 'number' || data.autoClickers < 0 || data.autoClickers > 1000000) return false;
-                if (typeof data.userId !== 'string' || !data.userId.startsWith('user_') && !data.userId.startsWith('tg_')) return false;
+                if (typeof data.userId !== 'string') return false;
                 
                 // Проверка дополнительных полей
                 if (data.telegramStars && (typeof data.telegramStars !== 'number' || data.telegramStars < 0 || data.telegramStars > 1000000)) return false;
@@ -663,33 +689,109 @@
                 return true;
             },
             
-            // Генерация уникального ID пользователя
-            generateUserId() {
-                const timestamp = Date.now();
-                const random = Math.random().toString(36).substr(2, 9);
-                const userAgentHash = navigator.userAgent.length % 100;
-                return `user_${timestamp}_${random}_${userAgentHash}`;
+            // Сохранение прогресса
+            saveProgress(userId, gameData) {
+                try {
+                    // Добавляем метаданные
+                    const saveData = {
+                        ...gameData,
+                        version: '1.2.0',
+                        saveTimestamp: Date.now(),
+                        saveCount: (gameData.saveCount || 0) + 1
+                    };
+                    
+                    // Валидируем данные
+                    if (!this.validateGameData(saveData)) {
+                        console.error('Некорректные данные для сохранения');
+                        return false;
+                    }
+                    
+                    // Шифруем и сохраняем
+                    const encrypted = this.encryptData(saveData);
+                    const storageKey = this.getUserStorageKey(userId);
+                    localStorage.setItem(storageKey, encrypted);
+                    
+                    // Сохраняем резервную копию
+                    localStorage.setItem('tim_last_backup', encrypted);
+                    
+                    return true;
+                } catch (error) {
+                    console.error('Ошибка сохранения:', error);
+                    return false;
+                }
             },
             
-            // Обнаружение автокликера
-            detectAutoClick(clickTimes) {
-                if (clickTimes.length < 5) return false;
-                
-                const recentClicks = clickTimes.slice(-5);
-                const intervals = [];
-                
-                for (let i = 1; i < recentClicks.length; i++) {
-                    intervals.push(recentClicks[i] - recentClicks[i-1]);
+            // Загрузка прогресса
+            loadProgress(userId) {
+                try {
+                    const storageKey = this.getUserStorageKey(userId);
+                    const encrypted = localStorage.getItem(storageKey);
+                    
+                    if (!encrypted) {
+                        console.log('Сохранение не найдено для пользователя:', userId);
+                        return null;
+                    }
+                    
+                    const gameData = this.decryptData(encrypted);
+                    
+                    if (!gameData || !this.validateGameData(gameData)) {
+                        console.warn('Некорректные сохраненные данные');
+                        
+                        // Пробуем загрузить резервную копию
+                        const backup = localStorage.getItem('tim_last_backup');
+                        if (backup) {
+                            const backupData = this.decryptData(backup);
+                            if (backupData && this.validateGameData(backupData)) {
+                                return backupData;
+                            }
+                        }
+                        
+                        return null;
+                    }
+                    
+                    return gameData;
+                } catch (error) {
+                    console.error('Ошибка загрузки:', error);
+                    return null;
                 }
-                
-                // Вычисляем стандартное отклонение
-                const avg = intervals.reduce((a, b) => a + b) / intervals.length;
-                const variance = intervals.reduce((sum, interval) => {
-                    return sum + Math.pow(interval - avg, 2);
-                }, 0) / intervals.length;
-                
-                // Если стандартное отклонение очень маленькое (все клики почти одинаковы)
-                return variance < 5;
+            },
+            
+            // Удаление сохранения
+            clearProgress(userId) {
+                try {
+                    const storageKey = this.getUserStorageKey(userId);
+                    localStorage.removeItem(storageKey);
+                    localStorage.removeItem('tim_last_backup');
+                    localStorage.removeItem('tim_user_id');
+                    return true;
+                } catch (error) {
+                    console.error('Ошибка очистки:', error);
+                    return false;
+                }
+            },
+            
+            // Получение списка всех сохранений (для отладки)
+            getAllSaves() {
+                const saves = {};
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key.startsWith('tim_clicker_save_')) {
+                        const userId = key.replace('tim_clicker_save_', '');
+                        try {
+                            const encrypted = localStorage.getItem(key);
+                            const data = this.decryptData(encrypted);
+                            if (data) {
+                                saves[userId] = {
+                                    ...data,
+                                    lastSave: new Date(data.saveTimestamp).toLocaleString()
+                                };
+                            }
+                        } catch (e) {
+                            console.warn('Ошибка чтения сохранения:', key);
+                        }
+                    }
+                }
+                return saves;
             }
         };
         
@@ -735,18 +837,15 @@
                     { id: 3, name: 'Множитель', description: 'x1.5 доход от кликов', cost: 25000, level: 0 }
                 ]);
                 
-                // Защита от читерства
-                const lastActionTime = ref(Date.now());
-                const actionCounter = ref(0);
+                // Состояния для автосохранения и защиты
+                const lastSaveTime = ref(Date.now());
+                const offlineEarnings = ref(0);
                 const isSuspicious = ref(false);
                 const cheatDetection = ref({
                     rapidActions: 0,
                     lastRapidCheck: Date.now()
                 });
-                
-                // Новые состояния для офлайн заработка
-                const lastSaveTime = ref(Date.now());
-                const offlineEarnings = ref(0);
+                const saveCount = ref(0);
                 
                 // Вычисляемые свойства
                 const totalPassiveEarnings = computed(() => {
@@ -779,37 +878,7 @@
                     return 100000 + (cryptoMinerLevel.value * 50000);
                 });
                 
-                // Защита от быстрых действий
-                function checkActionLimit() {
-                    const now = Date.now();
-                    actionCounter.value++;
-                    
-                    // Сбрасываем счетчик каждые 10 секунд
-                    if (now - lastActionTime.value > 10000) {
-                        actionCounter.value = 1;
-                        lastActionTime.value = now;
-                        cheatDetection.value.rapidActions = 0;
-                    }
-                    
-                    // Если слишком много действий за короткое время
-                    if (actionCounter.value > 50 && now - lastActionTime.value < 10000) {
-                        cheatDetection.value.rapidActions++;
-                        if (cheatDetection.value.rapidActions > 3) {
-                            isSuspicious.value = true;
-                            showNotify('⚠️ Обнаружена подозрительная активность!', 'error');
-                            return false;
-                        }
-                    }
-                    
-                    // Проверка временной метки (защита от изменения системного времени)
-                    if (now < lastSaveTime.value) {
-                        showNotify('⚠️ Обнаружены проблемы со временем!', 'error');
-                        return false;
-                    }
-                    
-                    return true;
-                }
-                
+                // Форматирование чисел
                 function formatNumber(num) {
                     if (num >= 1000000000) return (num / 1000000000).toFixed(2) + 'B';
                     if (num >= 1000000) return (num / 1000000).toFixed(2) + 'M';
@@ -828,6 +897,7 @@
                     setTimeout(() => notification.value.show = false, 3000);
                 }
                 
+                // Эффекты
                 function addCryptoEffect(x, y) {
                     cryptoEffects.value.push({ x, y });
                     setTimeout(() => cryptoEffects.value.shift(), 2000);
@@ -838,7 +908,7 @@
                     setTimeout(() => adEffects.value.shift(), 2000);
                 }
                 
-                // Защищенный расчет офлайн заработка
+                // Расчет офлайн заработка
                 function calculateOfflineEarnings() {
                     const now = Date.now();
                     const timeDiff = now - lastSaveTime.value;
@@ -871,30 +941,18 @@
                     }
                 }
                 
-                // Защищенный клик
+                // Основные игровые функции
                 function mine() {
                     const now = Date.now();
                     
-                    // Отслеживание кликов для обнаружения автокликеров
+                    // Отслеживание кликов
                     clickTimes.value.push(now);
                     if (clickTimes.value.length > 10) {
                         clickTimes.value.shift();
                     }
                     
-                    // Проверка на автокликер
-                    if (Security.detectAutoClick(clickTimes.value)) {
-                        cheatDetection.value.rapidActions++;
-                        if (cheatDetection.value.rapidActions > 2) {
-                            showNotify('⚠️ Обнаружен автокликер!', 'error');
-                            return;
-                        }
-                    }
-                    
                     // Проверка кулдауна
                     if (now - lastClickTime.value < clickCooldown) return;
-                    
-                    // Проверка лимита действий
-                    if (!checkActionLimit()) return;
                     
                     lastClickTime.value = now;
                     
@@ -908,9 +966,8 @@
                         coins.value += passiveEarned;
                     }
                     
-                    // Крипто-майнер с улучшенным рандомом
+                    // Крипто-майнер
                     if (cryptoMinerActive.value && cryptoMinerTimeLeft.value > 0) {
-                        // Более сложный расчет рандома для защиты от подделки
                         const timestamp = Date.now();
                         const seed = (timestamp % 1000) / 1000;
                         const random1 = Math.random();
@@ -932,8 +989,6 @@
                 }
                 
                 function buyUpgrade(id) {
-                    if (!checkActionLimit()) return;
-                    
                     const upgrade = upgrades.value.find(u => u.id === id);
                     if (!upgrade || coins.value < upgrade.cost) {
                         showNotify('Недостаточно TIM!', 'error');
@@ -959,8 +1014,6 @@
                 }
                 
                 function activateCryptoMiner() {
-                    if (!checkActionLimit()) return;
-                    
                     const cost = cryptoMinerCost.value;
                     if (coins.value < cost) {
                         showNotify(`Недостаточно TIM! Нужно ${formatNumber(cost)} TIM`, 'error');
@@ -988,8 +1041,6 @@
                 }
                 
                 function watchAd(type) {
-                    if (!checkActionLimit()) return;
-                    
                     const ad = ads.value[type];
                     
                     if (!ad.available && type !== 'instant') {
@@ -1002,7 +1053,7 @@
                         return;
                     }
                     
-                    // Проверка времени последнего просмотра (защита от быстрых повторов)
+                    // Проверка времени последнего просмотра
                     const now = Date.now();
                     if (ad.lastWatch && (now - ad.lastWatch) < 1000) {
                         showNotify('Слишком быстро!', 'error');
@@ -1022,7 +1073,7 @@
                             
                             let reward = ad.reward;
                             
-                            // Сохраняем время просмотра для проверки
+                            // Сохраняем время просмотра
                             ad.lastWatch = Date.now();
                             
                             if (type === 'daily') {
@@ -1058,23 +1109,20 @@
                     }, 1000);
                 }
                 
+                // Функции друзей
                 function generateInvite() {
-                    if (!checkActionLimit()) return;
-                    
                     const inviteCode = Math.random().toString(36).substr(2, 8).toUpperCase();
                     showNotify(`Код приглашения: ${inviteCode}. Поделитесь с другом!`);
                 }
                 
                 function copyReferral() {
-                    const link = `https://t.me/ваш_бот?start=${userId.value}`;
+                    const link = `https://t.me/timclicker_bot?start=${userId.value}`;
                     navigator.clipboard.writeText(link)
                         .then(() => showNotify('Ссылка скопирована! Поделитесь с другом'))
                         .catch(() => showNotify('Ошибка копирования', 'error'));
                 }
                 
                 function claimFriendBonus(friendId) {
-                    if (!checkActionLimit()) return;
-                    
                     const friend = friends.value.find(f => f.id === friendId);
                     if (!friend || friend.bonusClaimed) return;
                     
@@ -1094,8 +1142,6 @@
                 }
                 
                 function addFriend(name) {
-                    if (!checkActionLimit()) return;
-                    
                     const level = Math.floor(Math.random() * 10) + 1;
                     const passiveIncome = (Math.random() * 0.5 + 0.1) * level;
                     
@@ -1125,12 +1171,10 @@
                     saveGame();
                 }
                 
+                // Функции токенов
                 function convertTokens() {
-                    if (!checkActionLimit()) return;
-                    
                     const amount = parseFloat(convertAmount.value);
                     
-                    // Проверка ввода
                     if (isNaN(amount) || amount <= 0) {
                         showNotify('Неверная сумма!', 'error');
                         return;
@@ -1157,11 +1201,8 @@
                 }
                 
                 function withdrawTokens() {
-                    if (!checkActionLimit()) return;
-                    
                     const amount = parseFloat(withdrawAmount.value);
                     
-                    // Проверка ввода
                     if (isNaN(amount) || amount <= 0) {
                         showNotify('Неверная сумма!', 'error');
                         return;
@@ -1185,6 +1226,7 @@
                     saveGame();
                 }
                 
+                // Функции кошелька
                 function saveWallet() {
                     if (!isValidWallet.value) {
                         showNotify('Неверный формат адреса кошелька!', 'error');
@@ -1192,7 +1234,7 @@
                     }
                     
                     polygonWalletAddress.value = polygonWalletInput.value.trim();
-                    localStorage.setItem('timWallet', polygonWalletAddress.value);
+                    localStorage.setItem('tim_wallet_address', polygonWalletAddress.value);
                     polygonWalletInput.value = '';
                     
                     showNotify('Кошелек сохранен!');
@@ -1206,10 +1248,9 @@
                         .catch(() => showNotify('Ошибка копирования', 'error'));
                 }
                 
+                // Функции Telegram Stars
                 function buyStars(amount) {
-                    if (!checkActionLimit()) return;
-                    
-                    // Эмуляция покупки звезд (в реальном приложении здесь должен быть Telegram API)
+                    // Эмуляция покупки звезд
                     if (amount < 0 || amount > 10000) {
                         showNotify('Недопустимое количество звезд!', 'error');
                         return;
@@ -1221,8 +1262,6 @@
                 }
                 
                 function buyTimForStars(starsCost, timAmount) {
-                    if (!checkActionLimit()) return;
-                    
                     if (telegramStars.value < starsCost) {
                         showNotify('Недостаточно звезд!', 'error');
                         return;
@@ -1241,6 +1280,7 @@
                     saveGame();
                 }
                 
+                // Управление страницами
                 function setPage(page) {
                     activePage.value = page;
                     fullscreenPage.value = '';
@@ -1254,83 +1294,57 @@
                     fullscreenPage.value = '';
                 }
                 
-                // Улучшенное сохранение игры с защитой
+                // Система сохранения игры
                 function saveGame() {
-                    const gameData = {
-                        coins: coins.value, 
-                        profitPerTap: profitPerTap.value, 
-                        autoClickers: autoClickers.value,
-                        realTokens: realTokens.value, 
-                        telegramStars: telegramStars.value, 
-                        friends: friends.value,
-                        upgrades: upgrades.value, 
-                        cryptoMinerLevel: cryptoMinerLevel.value,
-                        cryptoMinerActive: cryptoMinerActive.value, 
-                        cryptoMinerEndTime: cryptoMinerEndTime.value,
-                        ads: ads.value, 
-                        totalAdEarnings: totalAdEarnings.value, 
-                        totalReferralEarnings: totalReferralEarnings.value,
-                        lastSaveTime: Date.now(),
-                        userId: userId.value,
-                        version: '1.1.0',
-                        cheatDetection: cheatDetection.value
-                    };
-                    
-                    // Проверяем данные перед сохранением
-                    if (Security.validateGameData(gameData)) {
-                        const encoded = Security.encode(gameData);
-                        localStorage.setItem('timClickerSave', encoded);
-                    } else {
-                        console.error('Некорректные данные для сохранения');
-                        // В случае ошибки сохраняем минимальные данные для восстановления
-                        const minimalData = {
-                            coins: Math.min(coins.value, 1000000000),
-                            profitPerTap: Math.min(profitPerTap.value, 1000),
-                            autoClickers: Math.min(autoClickers.value, 1000),
-                            realTokens: Math.min(realTokens.value, 1000),
-                            telegramStars: Math.min(telegramStars.value, 1000),
-                            userId: userId.value,
+                    try {
+                        // Подготавливаем данные для сохранения
+                        const gameData = {
+                            coins: coins.value, 
+                            profitPerTap: profitPerTap.value, 
+                            autoClickers: autoClickers.value,
+                            realTokens: realTokens.value, 
+                            telegramStars: telegramStars.value, 
+                            friends: friends.value,
+                            upgrades: JSON.parse(JSON.stringify(upgrades.value)), // Глубокое копирование
+                            cryptoMinerLevel: cryptoMinerLevel.value,
+                            cryptoMinerActive: cryptoMinerActive.value, 
+                            cryptoMinerEndTime: cryptoMinerEndTime.value,
+                            ads: JSON.parse(JSON.stringify(ads.value)),
+                            totalAdEarnings: totalAdEarnings.value, 
+                            totalReferralEarnings: totalReferralEarnings.value,
                             lastSaveTime: Date.now(),
-                            version: '1.1.0'
+                            userId: userId.value,
+                            saveCount: saveCount.value + 1,
+                            polygonWalletAddress: polygonWalletAddress.value
                         };
-                        const encodedMinimal = Security.encode(minimalData);
-                        localStorage.setItem('timClickerSaveBackup', encodedMinimal);
+                        
+                        // Сохраняем через StorageManager
+                        const success = StorageManager.saveProgress(userId.value, gameData);
+                        
+                        if (success) {
+                            saveCount.value++;
+                            lastSaveTime.value = Date.now();
+                        } else {
+                            console.warn('Не удалось сохранить игру');
+                        }
+                        
+                        return success;
+                    } catch (error) {
+                        console.error('Ошибка сохранения игры:', error);
+                        return false;
                     }
                 }
                 
-                // Улучшенная загрузка игры
                 function loadGame() {
-                    const saved = localStorage.getItem('timClickerSave');
-                    const now = Date.now();
-                    
-                    if (saved) {
-                        try {
-                            const gameData = Security.decode(saved);
-                            
-                            if (!gameData || !Security.validateGameData(gameData)) {
-                                console.warn('Некорректные сохраненные данные, пробуем загрузить резервную копию');
-                                const backup = localStorage.getItem('timClickerSaveBackup');
-                                if (backup) {
-                                    const backupData = Security.decode(backup);
-                                    if (backupData && Security.validateGameData(backupData)) {
-                                        loadBackupData(backupData);
-                                        return;
-                                    }
-                                }
-                                resetGame();
-                                return;
-                            }
-                            
-                            // Проверяем ID пользователя
-                            if (!userId.value) {
-                                userId.value = gameData.userId;
-                            } else if (gameData.userId && gameData.userId !== userId.value) {
-                                // Разные пользователи - начинаем заново
-                                console.log('Новый пользователь, сброс игры');
-                                resetGame();
-                                return;
-                            }
-                            
+                    try {
+                        // Определяем ID пользователя
+                        userId.value = StorageManager.generateUserId();
+                        
+                        // Загружаем сохранение
+                        const gameData = StorageManager.loadProgress(userId.value);
+                        const now = Date.now();
+                        
+                        if (gameData) {
                             // Загружаем основные данные
                             coins.value = gameData.coins || 0;
                             profitPerTap.value = gameData.profitPerTap || 1;
@@ -1338,19 +1352,66 @@
                             realTokens.value = gameData.realTokens || 0;
                             telegramStars.value = gameData.telegramStars || 0;
                             friends.value = gameData.friends || [];
-                            upgrades.value = gameData.upgrades || upgrades.value;
+                            
+                            // Загружаем улучшения
+                            if (gameData.upgrades && gameData.upgrades.length === 3) {
+                                upgrades.value = gameData.upgrades;
+                            }
+                            
                             cryptoMinerLevel.value = gameData.cryptoMinerLevel || 0;
                             cryptoMinerActive.value = gameData.cryptoMinerActive || false;
                             cryptoMinerEndTime.value = gameData.cryptoMinerEndTime || 0;
-                            ads.value = gameData.ads || ads.value;
+                            
+                            // Загружаем рекламу
+                            if (gameData.ads) {
+                                ads.value = gameData.ads;
+                            }
+                            
                             totalAdEarnings.value = gameData.totalAdEarnings || 0;
                             totalReferralEarnings.value = gameData.totalReferralEarnings || 0;
+                            saveCount.value = gameData.saveCount || 0;
                             lastSaveTime.value = gameData.lastSaveTime || now;
-                            cheatDetection.value = gameData.cheatDetection || cheatDetection.value;
+                            
+                            // Загружаем адрес кошелька
+                            polygonWalletAddress.value = gameData.polygonWalletAddress || 
+                                                         localStorage.getItem('tim_wallet_address') || '';
                             
                             // Проверяем крипто-майнер
                             if (cryptoMinerActive.value && now > cryptoMinerEndTime.value) {
                                 cryptoMinerActive.value = false;
+                            }
+                            
+                            // Обновляем время кулдаунов рекламы
+                            if (ads.value.daily.lastWatch) {
+                                const timeSinceDaily = Math.floor((now - ads.value.daily.lastWatch) / 1000);
+                                if (timeSinceDaily >= 24 * 60 * 60) {
+                                    ads.value.daily.available = true;
+                                    ads.value.daily.watchedToday = 0;
+                                    ads.value.daily.cooldown = 0;
+                                } else if (ads.value.daily.watchedToday >= 3) {
+                                    ads.value.daily.available = false;
+                                    ads.value.daily.cooldown = 24 * 60 * 60 - timeSinceDaily;
+                                }
+                            }
+                            
+                            if (ads.value.hourly.lastWatch) {
+                                const timeSinceHourly = Math.floor((now - ads.value.hourly.lastWatch) / 1000);
+                                if (timeSinceHourly >= 60 * 60) {
+                                    ads.value.hourly.available = true;
+                                    ads.value.hourly.cooldown = 0;
+                                } else {
+                                    ads.value.hourly.available = false;
+                                    ads.value.hourly.cooldown = 60 * 60 - timeSinceHourly;
+                                }
+                            }
+                            
+                            if (ads.value.big.lastWatch) {
+                                const timeSinceBig = Math.floor((now - ads.value.big.lastWatch) / 1000);
+                                if (timeSinceBig >= 24 * 60 * 60) {
+                                    ads.value.big.available = true;
+                                } else {
+                                    ads.value.big.available = false;
+                                }
                             }
                             
                             // Рассчитываем офлайн заработок
@@ -1359,38 +1420,31 @@
                                 offlineEarnings.value = offlineEarningsCalculated;
                             }
                             
-                            // Обновляем время сохранения
-                            lastSaveTime.value = now;
-                            saveGame();
-                            
-                        } catch (e) {
-                            console.error('Ошибка загрузки:', e);
+                            showNotify(`👋 Добро пожаловать обратно!`, 'success');
+                            console.log('Игра загружена успешно. Сохранений:', saveCount.value);
+                        } else {
+                            // Новый игрок
                             resetGame();
+                            showNotify('🎮 Новая игра начата!', 'premium');
                         }
-                    } else {
+                        
+                        // Сразу сохраняем текущее состояние
+                        saveGame();
+                        
+                    } catch (error) {
+                        console.error('Ошибка загрузки игры:', error);
                         resetGame();
+                        showNotify('⚠️ Ошибка загрузки, начата новая игра', 'error');
                     }
-                    
-                    const wallet = localStorage.getItem('timWallet');
-                    if (wallet) polygonWalletAddress.value = wallet;
-                }
-                
-                function loadBackupData(backupData) {
-                    coins.value = backupData.coins || 0;
-                    profitPerTap.value = backupData.profitPerTap || 1;
-                    autoClickers.value = backupData.autoClickers || 0;
-                    realTokens.value = backupData.realTokens || 0;
-                    telegramStars.value = backupData.telegramStars || 0;
-                    userId.value = backupData.userId || Security.generateUserId();
-                    lastSaveTime.value = backupData.lastSaveTime || Date.now();
-                    
-                    showNotify('⚠️ Загружена резервная копия игры', 'premium');
-                    saveGame();
                 }
                 
                 function resetGame() {
-                    userId.value = Security.generateUserId();
+                    // Генерируем новый ID если нужно
+                    if (!userId.value) {
+                        userId.value = StorageManager.generateUserId();
+                    }
                     
+                    // Сбрасываем все значения
                     coins.value = 0; 
                     profitPerTap.value = 1; 
                     autoClickers.value = 0; 
@@ -1416,21 +1470,26 @@
                     offlineEarnings.value = 0;
                     lastSaveTime.value = Date.now();
                     activePage.value = 'click';
-                    isSuspicious.value = false;
-                    actionCounter.value = 0;
-                    clickTimes.value = [];
-                    cheatDetection.value = {
-                        rapidActions: 0,
-                        lastRapidCheck: Date.now()
-                    };
+                    saveCount.value = 0;
                     
-                    saveGame();
+                    // Загружаем кошелек если есть
+                    polygonWalletAddress.value = localStorage.getItem('tim_wallet_address') || '';
                 }
                 
-                function startAutoClickers() {
-                    // Автоматический заработок (только если нет подозрений)
+                // Функция для сброса прогресса (для отладки)
+                function resetProgress() {
+                    if (confirm('Вы уверены что хотите сбросить весь прогресс? Это действие нельзя отменить.')) {
+                        StorageManager.clearProgress(userId.value);
+                        resetGame();
+                        showNotify('Прогресс сброшен!', 'premium');
+                    }
+                }
+                
+                // Автоматические процессы
+                function startGameLoops() {
+                    // Автоматический заработок
                     setInterval(() => { 
-                        if (autoClickers.value > 0 && !isSuspicious.value) {
+                        if (autoClickers.value > 0) {
                             coins.value += autoClickers.value; 
                             saveGame();
                         }
@@ -1448,7 +1507,7 @@
                         }
                     }, 1000);
                     
-                    // Обновление кулдаунов рекламы и сброс подозрений
+                    // Обновление кулдаунов рекламы
                     setInterval(() => {
                         if (ads.value.daily.cooldown > 0) {
                             ads.value.daily.cooldown--;
@@ -1463,43 +1522,50 @@
                                 ads.value.hourly.available = true;
                             }
                         }
-                        
-                        // Сбрасываем счетчик подозрительных действий через время
-                        if (isSuspicious.value && Date.now() - lastActionTime.value > 300000) { // 5 минут
-                            isSuspicious.value = false;
-                            actionCounter.value = 0;
-                            cheatDetection.value.rapidActions = 0;
-                            showNotify('Защита сброшена', 'success');
-                        }
                     }, 1000);
                 }
                 
+                // Инициализация при загрузке
                 onMounted(() => {
+                    // Предотвращаем масштабирование
                     document.addEventListener('gesturestart', e => e.preventDefault());
                     document.addEventListener('touchmove', e => { if (e.scale !== 1) e.preventDefault(); }, { passive: false });
                     
+                    // Инициализация Telegram Web App
                     if (window.Telegram?.WebApp) {
                         const tg = window.Telegram.WebApp;
                         tg.ready(); 
                         tg.expand();
                         const user = tg.initDataUnsafe?.user;
                         if (user) {
-                            userId.value = 'tg_' + user.id + '_' + Date.now();
+                            // Используем Telegram ID как часть user ID
+                            userId.value = `tg_${user.id}_${Date.now()}`;
+                            localStorage.setItem('tim_user_id', userId.value);
                         }
                     }
                     
+                    // Загружаем игру
                     loadGame();
-                    startAutoClickers();
-                    setTimeout(() => isReady.value = true, 800);
+                    
+                    // Запускаем игровые циклы
+                    startGameLoops();
+                    
+                    // Показываем интерфейс
+                    setTimeout(() => isReady.value = true, 500);
                 });
                 
                 return {
+                    // Состояния
                     isReady, coins, profitPerTap, autoClickers, activePage, fullscreenPage, realTokens,
                     polygonWalletAddress, polygonWalletInput, convertAmount, withdrawAmount, friends, userId,
                     telegramStars, cryptoMinerLevel, cryptoMinerActive, cryptoEffects, ads, adWatching,
                     adEffects, notification, upgrades, totalReferralEarnings, totalPassiveEarnings,
-                    totalAdEarnings, offlineEarnings, isSuspicious,
+                    totalAdEarnings, offlineEarnings,
+                    
+                    // Вычисляемые свойства
                     isValidWallet, cryptoMinerTimeLeft, cryptoMinerCost, currentCryptoChance,
+                    
+                    // Функции
                     formatNumber, formatTime, mine, buyUpgrade, activateCryptoMiner, watchAd, generateInvite,
                     copyReferral, claimFriendBonus, addFriend, convertTokens, withdrawTokens, saveWallet,
                     copyWallet, buyStars, buyTimForStars, setPage, openFullscreen, closeFullscreen, showNotify,
