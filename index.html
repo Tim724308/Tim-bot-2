@@ -837,7 +837,7 @@
                 // Основные игровые функции
                 function mine() {
                     const now = Date.now();
-                    const clickCooldown = 550; // ИСПРАВЛЕНО: увеличен кулдаун кликов с 300 до 550 мс
+                    const clickCooldown = 550;
                     
                     // Проверка кулдауна
                     if (now - lastClickTime.value < clickCooldown) return;
@@ -972,7 +972,7 @@
                     }, 1000);
                 }
                 
-                // Функции друзей
+                // Функции друзей - ТОЛЬКО для реальных друзей через реферальную систему
                 function generateInvite() {
                     const inviteCode = Math.random().toString(36).substr(2, 8).toUpperCase();
                     showNotify(`Код приглашения: ${inviteCode}. Поделитесь с другом!`);
@@ -989,12 +989,12 @@
                     const friend = friends.value.find(f => f.id === friendId);
                     if (!friend || friend.bonusClaimed) return;
                     
-                    // ИСПРАВЛЕНО: уменьшены бонусы за друзей
+                    // Бонусы за друзей
                     let bonus = 0;
                     if (friends.value.length <= 5) {
-                        bonus = 10000; // Было 50000
+                        bonus = 10000;
                     } else {
-                        bonus = 5000; // Было 10000
+                        bonus = 5000;
                     }
                     
                     coins.value += bonus;
@@ -1002,38 +1002,6 @@
                     friend.bonusClaimed = true;
                     
                     showNotify(`🎉 Получено ${formatNumber(bonus)} TIM за приглашение друга!`, 'success');
-                    saveGame();
-                }
-                
-                function addFriend(name) {
-                    // Функция для тестирования - только добавляет друзей по имени
-                    const level = Math.floor(Math.random() * 10) + 1;
-                    const passiveIncome = (Math.random() * 0.5 + 0.1) * level;
-                    
-                    const newFriend = {
-                        id: Date.now(),
-                        name: name || `Друг ${friends.value.length + 1}`,
-                        level: level,
-                        passiveIncome: passiveIncome,
-                        bonusClaimed: false,
-                        canClaim: true,
-                        coins: Math.floor(Math.random() * 500000) + 10000,
-                        joinedAt: Date.now()
-                    };
-                    
-                    friends.value.push(newFriend);
-                    
-                    // ИСПРАВЛЕНО: уменьшен бонус за достижение 1M TIM
-                    if (newFriend.coins >= 1000000) {
-                        setTimeout(() => {
-                            coins.value += 5000; // Было 10000
-                            totalReferralEarnings.value += 5000; // Было 10000
-                            showNotify(`🎊 Ваш друг ${newFriend.name} достиг 1M TIM! Вы получаете 5,000 TIM бонуса!`, 'premium');
-                            saveGame();
-                        }, 2000);
-                    }
-                    
-                    showNotify(`👋 Друг ${newFriend.name} добавлен! Вы можете забрать бонус.`);
                     saveGame();
                 }
                 
@@ -1214,7 +1182,7 @@
                             autoClickers.value = gameData.autoClickers || 0;
                             realTokens.value = gameData.realTokens || 0;
                             telegramStars.value = gameData.telegramStars || 0;
-                            friends.value = gameData.friends || [];
+                            friends.value = gameData.friends || []; // Загружаем друзей, если они есть
                             
                             // Загружаем улучшения
                             if (gameData.upgrades && gameData.upgrades.length === 3) {
@@ -1346,7 +1314,7 @@
                     autoClickers.value = 0; 
                     realTokens.value = 0;
                     telegramStars.value = 0; 
-                    friends.value = []; 
+                    friends.value = []; // ПУСТОЙ список друзей для нового игрока
                     upgrades.value = [
                         { id: 1, name: 'Усилитель клика', description: '+0.5 TIM за клик', cost: 1000, level: 0 },
                         { id: 2, name: 'Автомайнер', description: '+5 TIM в минуту', cost: 5000, level: 0 },
@@ -1418,14 +1386,14 @@
                     document.addEventListener('gesturestart', e => e.preventDefault());
                     document.addEventListener('touchmove', e => { if (e.scale !== 1) e.preventDefault(); }, { passive: false });
                     
-                    // Инициализация Telegram Web App - УПРОЩЕННАЯ ВЕРСИЯ
+                    // Инициализация Telegram Web App - БЕЗ авто-добавления себя в друзья
                     if (window.Telegram?.WebApp) {
                         const tg = window.Telegram.WebApp;
                         tg.ready(); 
                         tg.expand();
                         const user = tg.initDataUnsafe?.user;
                         if (user) {
-                            // Используем Telegram ID для сохранения, но не перезаписываем существующий
+                            // Используем Telegram ID для сохранения
                             const telegramId = `tg_${user.id}`;
                             const existingId = localStorage.getItem('tim_user_id');
                             
@@ -1435,8 +1403,8 @@
                                 localStorage.setItem('tim_user_id', telegramId);
                             }
                             
-                            // ВАЖНО: Ничего не делаем с друзьями!
-                            // НЕ добавляем себя в друзья, НЕ добавляем тестовых друзей
+                            // ВАЖНО: НЕ добавляем себя в друзья!
+                            // Друзья будут добавляться только через реферальную систему
                         }
                     }
                     
@@ -1482,7 +1450,7 @@
                     
                     // Функции
                     formatNumber, formatTime, mine, buyUpgrade, activateCryptoMiner, watchAd, generateInvite,
-                    copyReferral, claimFriendBonus, addFriend, convertTokens, withdrawTokens, saveWallet,
+                    copyReferral, claimFriendBonus, convertTokens, withdrawTokens, saveWallet,
                     copyWallet, buyStars, buyTimForStars, setPage, openFullscreen, closeFullscreen, showNotify,
                     claimOfflineEarnings
                 };
@@ -1490,5 +1458,4 @@
         }).mount('#app');
     </script>
 </body>
-</html>
-
+</html>             
