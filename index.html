@@ -583,23 +583,23 @@
         
         createApp({
             setup() {
-                // Основные состояния
+                // ВАЖНО: Все значения обнулены для нового пользователя
                 const isReady = ref(false);
-                const coins = ref(0);
-                const profitPerTap = ref(1);
-                const autoClickers = ref(0);
+                const coins = ref(0); // Начинаем с 0
+                const profitPerTap = ref(1); // Базовый доход
+                const autoClickers = ref(0); // Нет автомайнеров
                 const activePage = ref('click');
                 const fullscreenPage = ref('');
-                const realTokens = ref(0);
+                const realTokens = ref(0); // Нет токенов
                 const polygonWalletAddress = ref('');
                 const polygonWalletInput = ref('');
                 const convertAmount = ref('');
                 const withdrawAmount = ref('');
-                const friends = ref([]);
+                const friends = ref([]); // Пустой список друзей
                 const userId = ref('user_' + Math.random().toString(36).substr(2, 9));
-                const telegramStars = ref(0);
-                const cryptoMinerLevel = ref(0);
-                const cryptoMinerActive = ref(false);
+                const telegramStars = ref(0); // Нет звезд
+                const cryptoMinerLevel = ref(0); // Уровень 0
+                const cryptoMinerActive = ref(false); // Не активен
                 const cryptoMinerEndTime = ref(0);
                 const cryptoMinerChance = ref(0.00001);
                 const cryptoEffects = ref([]);
@@ -622,7 +622,6 @@
                     { id: 3, name: 'Множитель', description: 'x1.5 доход от кликов', cost: 25000, level: 0 }
                 ]);
                 
-                // Вычисляемые свойства
                 const totalPassiveEarnings = computed(() => {
                     return friends.value.reduce((sum, friend) => {
                         return sum + friend.passiveIncome;
@@ -642,7 +641,6 @@
                 });
                 const cryptoMinerCost = computed(() => 100000 + (cryptoMinerLevel.value * 50000));
                 
-                // Вспомогательные функции
                 function formatNumber(num) {
                     if (num >= 1000000000) return (num / 1000000000).toFixed(2) + 'B';
                     if (num >= 1000000) return (num / 1000000).toFixed(2) + 'M';
@@ -671,23 +669,19 @@
                     setTimeout(() => adEffects.value.shift(), 2000);
                 }
                 
-                // Основные игровые функции
                 function mine() {
                     const now = Date.now();
                     if (now - lastClickTime.value < clickCooldown) return;
                     lastClickTime.value = now;
                     
-                    // Основной заработок
                     let earned = profitPerTap.value;
                     coins.value += earned;
                     
-                    // Пассивный доход от друзей
                     if (friends.value.length > 0) {
                         const passiveEarned = totalPassiveEarnings.value;
                         coins.value += passiveEarned;
                     }
                     
-                    // Крипто-майнер
                     if (cryptoMinerActive.value && cryptoMinerTimeLeft.value > 0 && Math.random() < currentCryptoChance.value) {
                         realTokens.value += 1;
                         showNotify(`🎰 Крипто-майнер нашел 1 MRT!`, 'crypto');
@@ -745,7 +739,6 @@
                         return;
                     }
                     
-                    // Начинаем просмотр
                     adWatching.value = { 
                         active: true, 
                         timeLeft: 30, 
@@ -757,10 +750,8 @@
                         if (adWatching.value.timeLeft <= 0) {
                             clearInterval(interval);
                             
-                            // Начисляем награду
                             let reward = ad.reward;
                             
-                            // Обновляем статистику просмотров
                             if (type === 'daily') {
                                 ad.watchedToday++;
                                 if (ad.watchedToday >= 3) {
@@ -774,11 +765,9 @@
                                 ad.available = false;
                             }
                             
-                            // Начисляем награду
                             coins.value += reward;
                             totalAdEarnings.value += reward;
                             
-                            // Добавляем эффект
                             const adCard = document.querySelector('.ad-card');
                             if (adCard) {
                                 const rect = adCard.getBoundingClientRect();
@@ -796,7 +785,6 @@
                     }, 1000);
                 }
                 
-                // Функции друзей и рефералов
                 function generateInvite() {
                     const inviteCode = Math.random().toString(36).substr(2, 8).toUpperCase();
                     showNotify(`Код приглашения: ${inviteCode}. Поделитесь с другом!`);
@@ -813,7 +801,6 @@
                     const friend = friends.value.find(f => f.id === friendId);
                     if (!friend || friend.bonusClaimed) return;
                     
-                    // Вычисляем бонус в зависимости от количества друзей
                     let bonus = 0;
                     if (friends.value.length <= 5) {
                         bonus = 50000;
@@ -830,7 +817,6 @@
                 }
                 
                 function addFriend(name) {
-                    // Случайный уровень и пассивный доход
                     const level = Math.floor(Math.random() * 10) + 1;
                     const passiveIncome = (Math.random() * 0.5 + 0.1) * level;
                     
@@ -847,7 +833,6 @@
                     
                     friends.value.push(newFriend);
                     
-                    // Проверяем достижение 1M TIM у друга (симуляция)
                     if (newFriend.coins >= 1000000) {
                         setTimeout(() => {
                             coins.value += 10000;
@@ -861,7 +846,6 @@
                     saveGame();
                 }
                 
-                // Функции крипто и кошелька
                 function convertTokens() {
                     const amount = parseFloat(convertAmount.value);
                     if (amount < 1000000 || coins.value < amount) {
@@ -912,7 +896,6 @@
                         .catch(() => showNotify('Ошибка копирования', 'error'));
                 }
                 
-                // Функции Telegram Stars
                 function buyStars(amount) {
                     telegramStars.value += amount;
                     showNotify(`Куплено ${amount} Telegram Stars!`, 'premium');
@@ -930,7 +913,6 @@
                     saveGame();
                 }
                 
-                // Управление интерфейсом
                 function setPage(page) {
                     activePage.value = page;
                     fullscreenPage.value = '';
@@ -944,7 +926,6 @@
                     fullscreenPage.value = '';
                 }
                 
-                // Сохранение и загрузка
                 function saveGame() {
                     const gameData = {
                         coins: coins.value, profitPerTap: profitPerTap.value, autoClickers: autoClickers.value,
@@ -957,59 +938,22 @@
                     localStorage.setItem('timClickerSave', JSON.stringify(gameData));
                 }
                 
+                // ВАЖНО: Функция loadGame НЕ загружает сохраненные данные при старте
+                // Все значения остаются нулевыми для нового пользователя
                 function loadGame() {
-                    const saved = localStorage.getItem('timClickerSave');
-                    if (saved) {
-                        try {
-                            const gameData = JSON.parse(saved);
-                            coins.value = gameData.coins || 0;
-                            profitPerTap.value = gameData.profitPerTap || 1;
-                            autoClickers.value = gameData.autoClickers || 0;
-                            realTokens.value = gameData.realTokens || 0;
-                            telegramStars.value = gameData.telegramStars || 0;
-                            friends.value = gameData.friends || [];
-                            upgrades.value = gameData.upgrades || upgrades.value;
-                            cryptoMinerLevel.value = gameData.cryptoMinerLevel || 0;
-                            cryptoMinerActive.value = gameData.cryptoMinerActive || false;
-                            cryptoMinerEndTime.value = gameData.cryptoMinerEndTime || 0;
-                            ads.value = gameData.ads || ads.value;
-                            totalAdEarnings.value = gameData.totalAdEarnings || 0;
-                            totalReferralEarnings.value = gameData.totalReferralEarnings || 0;
-                            
-                            if (cryptoMinerActive.value && Date.now() > cryptoMinerEndTime.value) {
-                                cryptoMinerActive.value = false;
-                            }
-                        } catch (e) {
-                            console.error('Ошибка загрузки:', e);
-                        }
-                    }
+                    // Пропускаем загрузку сохраненной игры
+                    // Все значения уже инициализированы как нулевые
+                    
+                    // Загружаем только кошелек из localStorage
                     const wallet = localStorage.getItem('timWallet');
                     if (wallet) polygonWalletAddress.value = wallet;
                 }
                 
-                function resetGame() {
-                    coins.value = 0; profitPerTap.value = 1; autoClickers.value = 0; realTokens.value = 0;
-                    telegramStars.value = 0; friends.value = []; upgrades.value = [
-                        { id: 1, name: 'Усилитель клика', description: '+0.5 TIM за клик', cost: 1000, level: 0 },
-                        { id: 2, name: 'Автомайнер', description: '+5 TIM в минуту', cost: 5000, level: 0 },
-                        { id: 3, name: 'Множитель', description: 'x1.5 доход от кликов', cost: 25000, level: 0 }
-                    ];
-                    cryptoMinerLevel.value = 0; cryptoMinerActive.value = false; cryptoMinerEndTime.value = 0;
-                    ads.value = {
-                        daily: { available: true, reward: 50000, cooldown: 0, watchedToday: 0 },
-                        hourly: { available: true, reward: 10000, cooldown: 0 },
-                        big: { available: true, reward: 200000 },
-                        instant: { available: true, reward: 5000 }
-                    };
-                    totalAdEarnings.value = 0; totalReferralEarnings.value = 0;
-                    activePage.value = 'click';
-                }
-                
-                // Инициализация
                 function startAutoClickers() {
                     setInterval(() => { 
                         if (autoClickers.value > 0) {
                             coins.value += autoClickers.value; 
+                            saveGame();
                         }
                     }, 60000);
                     
@@ -1022,7 +966,6 @@
                     }, 1000);
                     
                     setInterval(() => {
-                        // Обновляем кулдауны рекламы
                         if (ads.value.daily.cooldown > 0) {
                             ads.value.daily.cooldown--;
                             if (ads.value.daily.cooldown <= 0) {
@@ -1048,7 +991,11 @@
                         const user = tg.initDataUnsafe?.user;
                         if (user) userId.value = 'user_' + user.id;
                     }
-                    loadGame();
+                    
+                    // Очищаем сохраненную игру для нового пользователя
+                    localStorage.removeItem('timClickerSave');
+                    
+                    loadGame(); // Загружаем только кошелек
                     startAutoClickers();
                     setTimeout(() => isReady.value = true, 800);
                 });
