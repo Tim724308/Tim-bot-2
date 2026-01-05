@@ -743,36 +743,6 @@
                 const saveCount = ref(0);
                 const hasShownWelcome = ref(false);
                 
-                // Функция для очистки списка друзей от самого себя
-                function cleanFriendsList() {
-                    if (!friends.value || friends.value.length === 0) return;
-                    
-                    // Фильтруем друзей, удаляя записи, которые могут быть самим пользователем
-                    friends.value = friends.value.filter(friend => {
-                        // Проверяем различные признаки, что это не сам пользователь
-                        if (friend.name && (
-                            friend.name.includes("Вы") ||
-                            friend.name.includes("Я") ||
-                            friend.name.includes("Me") ||
-                            friend.name.includes("Self") ||
-                            friend.name.includes("User")
-                        )) {
-                            console.log('Удален друг, который является самим пользователем:', friend.name);
-                            return false; // Удаляем
-                        }
-                        
-                        // Также проверяем по ID, если он совпадает с userId
-                        if (friend.id && friend.id.toString().includes(userId.value)) {
-                            console.log('Удален друг с совпадающим ID:', friend.id);
-                            return false; // Удаляем
-                        }
-                        
-                        return true;
-                    });
-                    
-                    console.log('Список друзей очищен. Осталось друзей:', friends.value.length);
-                }
-                
                 // Вычисляемые свойства
                 const totalPassiveEarnings = computed(() => {
                     return friends.value.reduce((sum, friend) => {
@@ -1036,7 +1006,7 @@
                 }
                 
                 function addFriend(name) {
-                    // Функция остается только для тестирования
+                    // Функция для тестирования - только добавляет друзей по имени
                     const level = Math.floor(Math.random() * 10) + 1;
                     const passiveIncome = (Math.random() * 0.5 + 0.1) * level;
                     
@@ -1246,9 +1216,6 @@
                             telegramStars.value = gameData.telegramStars || 0;
                             friends.value = gameData.friends || [];
                             
-                            // ВАЖНО: Очищаем список друзей от самого себя
-                            cleanFriendsList();
-                            
                             // Загружаем улучшения
                             if (gameData.upgrades && gameData.upgrades.length === 3) {
                                 upgrades.value = gameData.upgrades.map(upgrade => ({
@@ -1451,7 +1418,7 @@
                     document.addEventListener('gesturestart', e => e.preventDefault());
                     document.addEventListener('touchmove', e => { if (e.scale !== 1) e.preventDefault(); }, { passive: false });
                     
-                    // Инициализация Telegram Web App (ВАРИАНТ 1 - исправлено)
+                    // Инициализация Telegram Web App - УПРОЩЕННАЯ ВЕРСИЯ
                     if (window.Telegram?.WebApp) {
                         const tg = window.Telegram.WebApp;
                         tg.ready(); 
@@ -1468,9 +1435,8 @@
                                 localStorage.setItem('tim_user_id', telegramId);
                             }
                             
-                            // ВАЖНО: НЕ добавляем себя автоматически в друзья!
-                            // Друзья должны добавляться только через реферальную систему
-                            // Старый код с авто-добавлением удален
+                            // ВАЖНО: Ничего не делаем с друзьями!
+                            // НЕ добавляем себя в друзья, НЕ добавляем тестовых друзей
                         }
                     }
                     
