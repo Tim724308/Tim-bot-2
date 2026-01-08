@@ -8,208 +8,687 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
-            --tim-blue: #00C8FF; --dark-bg: #111; --dark-light: #222; --text-white: #fff; --text-light: #ccc;
-            --success: #66bb6a; --error: #ff6b6b; --premium: #ffd700; --crypto: #8B5CF6; --ad-color: #FF6B35;
+            --tim-blue: #00C8FF;
+            --dark-bg: #111;
+            --dark-light: #222;
+            --text-white: #fff;
+            --text-light: #ccc;
+            --success: #66bb6a;
+            --error: #ff6b6b;
+            --premium: #ffd700;
+            --crypto: #8B5CF6;
+            --ad-color: #FF6B35;
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
-            font-family: Arial, sans-serif; background: var(--dark-bg); color: var(--text-white); text-align: center;
-            padding: 20px 20px 80px 20px; min-height: 100vh; position: relative;
-            -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; touch-action: manipulation;
+            font-family: Arial, sans-serif;
+            background: var(--dark-bg);
+            color: var(--text-white);
+            text-align: center;
+            padding: 20px 20px 80px 20px;
+            min-height: 100vh;
+            position: relative;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+            touch-action: manipulation;
         }
         .loading {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--dark-bg);
-            display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--dark-bg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
         }
         .spinner {
-            width: 50px; height: 50px; border: 5px solid var(--dark-light); border-top: 5px solid var(--tim-blue);
-            border-radius: 50%; animation: spin 1s linear infinite;
+            width: 50px;
+            height: 50px;
+            border: 5px solid var(--dark-light);
+            border-top: 5px solid var(--tim-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
         .btn {
-            background: var(--tim-blue); color: var(--dark-bg); border: none; padding: 15px 30px;
-            border-radius: 10px; font-size: 1.2rem; font-weight: bold; cursor: pointer; margin: 20px 0;
-            width: 100%; max-width: 300px;
+            background: var(--tim-blue);
+            color: var(--dark-bg);
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 20px 0;
+            width: 100%;
+            max-width: 300px;
         }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .btn-premium { background: linear-gradient(45deg, var(--premium), #ff9800); color: black; }
-        .btn-crypto { background: linear-gradient(45deg, var(--crypto), #6366F1); color: white; }
-        .btn-ad { background: linear-gradient(45deg, var(--ad-color), #FF9500); color: white; }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .btn-premium {
+            background: linear-gradient(45deg, var(--premium), #ff9800);
+            color: black;
+        }
+        .btn-crypto {
+            background: linear-gradient(45deg, var(--crypto), #6366F1);
+            color: white;
+        }
+        .btn-ad {
+            background: linear-gradient(45deg, var(--ad-color), #FF9500);
+            color: white;
+        }
         .btn-back {
-            position: absolute; top: 20px; left: 20px; background: rgba(255,255,255,0.1); color: var(--text-white);
-            border: 1px solid var(--tim-blue); border-radius: 50%; width: 40px; height: 40px; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; font-size: 20px; z-index: 100;
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.1);
+            color: var(--text-white);
+            border: 1px solid var(--tim-blue);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            z-index: 100;
         }
-        .game-interface { max-width: 500px; margin: 0 auto; }
+        .game-interface {
+            max-width: 500px;
+            margin: 0 auto;
+        }
         .top-stats {
-            display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
-            padding: 10px 15px; background: var(--dark-light); border-radius: 15px; border: 2px solid var(--tim-blue);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 10px 15px;
+            background: var(--dark-light);
+            border-radius: 15px;
+            border: 2px solid var(--tim-blue);
         }
-        .tim-balance, .stars-stat { display: flex; flex-direction: column; align-items: flex-start; }
-        .tim-amount, .stars-amount { font-size: 22px; font-weight: bold; color: var(--tim-blue); line-height: 1; }
-        .stars-amount { color: var(--premium); }
-        .tim-label, .stars-label { font-size: 10px; color: var(--text-light); margin-top: 2px; }
-        .click-stats { display: flex; flex-direction: column; align-items: center; gap: 5px; }
-        .click-stat { display: flex; align-items: center; gap: 5px; font-size: 13px; }
-        .click-stat-value { color: var(--tim-blue); font-weight: bold; }
+        .tim-balance, .stars-stat {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .tim-amount, .stars-amount {
+            font-size: 22px;
+            font-weight: bold;
+            color: var(--tim-blue);
+            line-height: 1;
+        }
+        .stars-amount {
+            color: var(--premium);
+        }
+        .tim-label, .stars-label {
+            font-size: 10px;
+            color: var(--text-light);
+            margin-top: 2px;
+        }
+        .click-stats {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+        .click-stat {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 13px;
+        }
+        .click-stat-value {
+            color: var(--tim-blue);
+            font-weight: bold;
+        }
         .click-area {
-            width: 80vw; height: 80vw; max-width: 300px; max-height: 300px;
-            background: var(--dark-light); border-radius: 50%; margin: 30px auto;
-            display: flex; align-items: center; justify-content: center; font-size: 48px; font-weight: bold;
-            cursor: pointer; border: 6px solid var(--tim-blue); user-select: none; transition: transform 0.1s;
-            touch-action: manipulation; box-shadow: 0 0 30px rgba(0, 200, 255, 0.3);
+            width: 80vw;
+            height: 80vw;
+            max-width: 300px;
+            max-height: 300px;
+            background: var(--dark-light);
+            border-radius: 50%;
+            margin: 30px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            font-weight: bold;
+            cursor: pointer;
+            border: 6px solid var(--tim-blue);
+            user-select: none;
+            transition: transform 0.1s;
+            touch-action: manipulation;
+            box-shadow: 0 0 30px rgba(0, 200, 255, 0.3);
         }
-        .click-area:active { transform: scale(0.95); }
+        .click-area:active {
+            transform: scale(0.95);
+        }
         .bottom-tabs {
-            position: fixed; bottom: 0; left: 0; right: 0; background: var(--dark-bg); padding: 10px;
-            border-top: 1px solid var(--dark-light); display: flex; justify-content: space-around; z-index: 100;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--dark-bg);
+            padding: 10px;
+            border-top: 1px solid var(--dark-light);
+            display: flex;
+            justify-content: space-around;
+            z-index: 100;
         }
         .bottom-tab {
-            padding: 12px 5px; background: var(--dark-light); border-radius: 8px; cursor: pointer; flex: 1;
-            margin: 0 3px; text-align: center; min-width: 0; font-size: 24px; display: flex;
-            align-items: center; justify-content: center; transition: all 0.3s;
+            padding: 12px 5px;
+            background: var(--dark-light);
+            border-radius: 8px;
+            cursor: pointer;
+            flex: 1;
+            margin: 0 3px;
+            text-align: center;
+            min-width: 0;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
         }
-        .bottom-tab.active { background: var(--tim-blue); color: var(--dark-bg); font-weight: bold; box-shadow: 0 0 15px rgba(0, 200, 255, 0.5); }
-        .grid-layout { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin: 20px 0; }
+        .bottom-tab.active {
+            background: var(--tim-blue);
+            color: var(--dark-bg);
+            font-weight: bold;
+            box-shadow: 0 0 15px rgba(0, 200, 255, 0.5);
+        }
+        .grid-layout {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin: 20px 0;
+        }
         .grid-card {
-            background: var(--dark-light); padding: 15px; border-radius: 10px; cursor: pointer;
-            border: 2px solid var(--tim-blue); text-align: center; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; min-height: 110px; transition: transform 0.2s;
+            background: var(--dark-light);
+            padding: 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            border: 2px solid var(--tim-blue);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 110px;
+            transition: transform 0.2s;
         }
-        .grid-card:hover { transform: scale(1.03); }
-        .grid-card .card-title { color: var(--tim-blue); font-weight: bold; font-size: 1rem; margin-bottom: 6px; }
-        .grid-card .card-desc { color: var(--text-light); font-size: 11px; line-height: 1.3; }
+        .grid-card:hover {
+            transform: scale(1.03);
+        }
+        .grid-card .card-title {
+            color: var(--tim-blue);
+            font-weight: bold;
+            font-size: 1rem;
+            margin-bottom: 6px;
+        }
+        .grid-card .card-desc {
+            color: var(--text-light);
+            font-size: 11px;
+            line-height: 1.3;
+        }
         .card {
-            background: var(--dark-light); padding: 15px; margin: 10px 0; border-radius: 10px;
-            border-left: 4px solid var(--tim-blue); text-align: left;
+            background: var(--dark-light);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            border-left: 4px solid var(--tim-blue);
+            text-align: left;
         }
-        .card-title { color: var(--tim-blue); font-weight: bold; font-size: 1.1rem; }
-        .card-cost { color: var(--text-white); font-weight: bold; background: rgba(0,0,0,0.3); padding: 5px 10px; border-radius: 5px; }
-        .card-desc { color: var(--text-light); font-size: 13px; margin-bottom: 8px; line-height: 1.4; }
+        .card-title {
+            color: var(--tim-blue);
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        .card-cost {
+            color: var(--text-white);
+            font-weight: bold;
+            background: rgba(0,0,0,0.3);
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+        .card-desc {
+            color: var(--text-light);
+            font-size: 13px;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
         .input {
-            width: 100%; padding: 12px; background: rgba(255,255,255,0.1); border: 2px solid var(--tim-blue);
-            border-radius: 8px; color: white; margin: 10px 0; font-size: 16px;
+            width: 100%;
+            padding: 12px;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid var(--tim-blue);
+            border-radius: 8px;
+            color: white;
+            margin: 10px 0;
+            font-size: 16px;
         }
         .notification {
-            position: fixed; top: 20px; left: 50%; transform: translateX(-50%); padding: 15px 25px;
-            border-radius: 10px; z-index: 1001; font-weight: bold; max-width: 90%; animation: slideIn 0.3s ease;
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 25px;
+            border-radius: 10px;
+            z-index: 1001;
+            font-weight: bold;
+            max-width: 90%;
+            animation: slideIn 0.3s ease;
         }
-        @keyframes slideIn { from { transform: translateX(-50%) translateY(-100%); } to { transform: translateX(-50%) translateY(0); } }
-        .notification.success { background: var(--success); } .notification.error { background: var(--error); }
-        .notification.premium { background: var(--premium); color: black; }
-        .notification.crypto { background: var(--crypto); color: white; } .notification.ad { background: var(--ad-color); color: white; }
+        @keyframes slideIn {
+            from { transform: translateX(-50%) translateY(-100%); opacity: 0; }
+            to { transform: translateX(-50%) translateY(0); opacity: 1; }
+        }
+        .notification.success {
+            background: var(--success);
+            color: white;
+        }
+        .notification.error {
+            background: var(--error);
+            color: white;
+        }
+        .notification.premium {
+            background: var(--premium);
+            color: black;
+        }
+        .notification.crypto {
+            background: var(--crypto);
+            color: white;
+        }
+        .notification.ad {
+            background: var(--ad-color);
+            color: white;
+        }
         .friend-card {
-            background: var(--dark-light); padding: 10px; margin: 6px 0; border-radius: 10px;
-            border-left: 3px solid var(--success); display: flex; justify-content: space-between; align-items: center;
+            background: var(--dark-light);
+            padding: 10px;
+            margin: 6px 0;
+            border-radius: 10px;
+            border-left: 3px solid var(--success);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        .friend-info { text-align: left; flex: 1; }
-        .friend-name { font-weight: bold; color: var(--text-white); font-size: 12px; margin-bottom: 2px; }
-        .friend-bonus { color: var(--success); font-size: 11px; }
+        .friend-info {
+            text-align: left;
+            flex: 1;
+        }
+        .friend-name {
+            font-weight: bold;
+            color: var(--text-white);
+            font-size: 12px;
+            margin-bottom: 2px;
+        }
+        .friend-bonus {
+            color: var(--success);
+            font-size: 11px;
+        }
         .friend-btn {
-            background: var(--success); color: white; border: none; padding: 4px 8px; border-radius: 5px;
-            cursor: pointer; font-weight: bold; font-size: 11px; min-width: 60px;
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 11px;
+            min-width: 60px;
         }
         .referral-link, .wallet-address {
-            background: rgba(255,255,255,0.1); padding: 8px; border-radius: 8px; font-family: monospace;
-            word-break: break-all; margin: 10px 0; cursor: pointer; font-size: 11px;
+            background: rgba(255,255,255,0.1);
+            padding: 8px;
+            border-radius: 8px;
+            font-family: monospace;
+            word-break: break-all;
+            margin: 10px 0;
+            cursor: pointer;
+            font-size: 11px;
         }
-        .page { display: none; }
-        .page.active { display: block; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .page-header { display: flex; align-items: center; justify-content: center; margin-bottom: 15px; gap: 10px; }
-        .page-title { font-size: 1.3rem; color: var(--tim-blue); font-weight: bold; text-align: center; }
+        .page {
+            display: none;
+        }
+        .page.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            gap: 10px;
+        }
+        .page-title {
+            font-size: 1.3rem;
+            color: var(--tim-blue);
+            font-weight: bold;
+            text-align: center;
+        }
         .fullscreen-page {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--dark-bg); z-index: 200;
-            padding: 20px; overflow-y: auto; display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--dark-bg);
+            z-index: 200;
+            padding: 20px;
+            overflow-y: auto;
+            display: none;
         }
-        .fullscreen-page.active { display: block; animation: slideUp 0.3s ease; }
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        .fullscreen-content { max-width: 500px; margin: 0 auto; padding-top: 60px; }
+        .fullscreen-page.active {
+            display: block;
+            animation: slideUp 0.3s ease;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+        .fullscreen-content {
+            max-width: 500px;
+            margin: 0 auto;
+            padding-top: 60px;
+        }
         .mrt-badge {
-            background: linear-gradient(45deg, #8B5CF6, #6366F1); color: white; padding: 2px 6px;
-            border-radius: 4px; font-size: 10px; font-weight: bold; margin-left: 5px;
+            background: linear-gradient(45deg, #8B5CF6, #6366F1);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+            margin-left: 5px;
         }
-        /* Крипто-майнер */
-        .crypto-card { background: rgba(139, 92, 246, 0.1); border: 2px solid var(--crypto); position: relative; }
-        .crypto-card::before { content: "💰"; position: absolute; top: 10px; right: 10px; font-size: 16px; }
+        .crypto-card {
+            background: rgba(139, 92, 246, 0.1);
+            border: 2px solid var(--crypto);
+            position: relative;
+        }
+        .crypto-card::before {
+            content: "💰";
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 16px;
+        }
         .chance-display, .ad-timer {
-            background: rgba(0, 0, 0, 0.3); padding: 3px 6px; border-radius: 20px; font-size: 10px;
-            margin-top: 4px; color: var(--crypto); font-weight: bold;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 3px 6px;
+            border-radius: 20px;
+            font-size: 10px;
+            margin-top: 4px;
+            color: var(--crypto);
+            font-weight: bold;
         }
         .crypto-effect, .ad-effect {
-            position: fixed; font-size: 20px; font-weight: bold; z-index: 1002; pointer-events: none;
+            position: fixed;
+            font-size: 20px;
+            font-weight: bold;
+            z-index: 1002;
+            pointer-events: none;
             animation: float 2s ease-out forwards;
         }
-        .crypto-effect { color: var(--crypto); } .ad-effect { color: var(--ad-color); }
+        .crypto-effect {
+            color: var(--crypto);
+        }
+        .ad-effect {
+            color: var(--ad-color);
+        }
         @keyframes float {
             0% { transform: translateY(0) scale(1); opacity: 1; }
             50% { transform: translateY(-50px) scale(1.2); opacity: 0.8; }
             100% { transform: translateY(-100px) scale(1.5); opacity: 0; }
         }
-        /* Реклама */
-        .ad-card { background: rgba(255, 107, 53, 0.1); border: 2px solid var(--ad-color); position: relative; }
-        .ad-card::before { content: "📺"; position: absolute; top: 10px; right: 10px; font-size: 16px; }
-        .ad-timer { color: var(--ad-color); }
-        .ad-watch-progress { width: 100%; height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px; margin-top: 8px; overflow: hidden; }
-        .ad-watch-fill { height: 100%; background: var(--ad-color); transition: width 0.3s ease; }
-        /* Telegram Stars - единый стиль */
-        .stars-section { background: var(--dark-light); padding: 12px; border-radius: 10px; margin: 8px 0; border: 2px solid var(--premium); }
-        .stars-balance { text-align: center; margin-bottom: 15px; }
-        .balance-amount { font-size: 28px; font-weight: bold; color: var(--premium); margin: 8px 0; }
-        .balance-label { color: var(--text-light); font-size: 12px; }
-        .stars-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin: 12px 0; }
+        .ad-card {
+            background: rgba(255, 107, 53, 0.1);
+            border: 2px solid var(--ad-color);
+            position: relative;
+        }
+        .ad-card::before {
+            content: "📺";
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 16px;
+        }
+        .ad-timer {
+            color: var(--ad-color);
+        }
+        .ad-watch-progress {
+            width: 100%;
+            height: 3px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+        .ad-watch-fill {
+            height: 100%;
+            background: var(--ad-color);
+            transition: width 0.3s ease;
+        }
+        .stars-section {
+            background: var(--dark-light);
+            padding: 12px;
+            border-radius: 10px;
+            margin: 8px 0;
+            border: 2px solid var(--premium);
+        }
+        .stars-balance {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        .balance-amount {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--premium);
+            margin: 8px 0;
+        }
+        .balance-label {
+            color: var(--text-light);
+            font-size: 12px;
+        }
+        .stars-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin: 12px 0;
+        }
         .stars-package {
-            background: rgba(255, 215, 0, 0.1); border: 1px solid var(--premium); border-radius: 8px;
-            padding: 10px; cursor: pointer; transition: all 0.2s; text-align: center;
+            background: rgba(255, 215, 0, 0.1);
+            border: 1px solid var(--premium);
+            border-radius: 8px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
         }
-        .stars-package:hover { transform: translateY(-2px); background: rgba(255, 215, 0, 0.15); }
-        .stars-icon { font-size: 20px; margin-bottom: 3px; }
-        .stars-count { font-size: 14px; font-weight: bold; color: var(--premium); }
-        /* TIM за звезды - такой же стиль как пополнение баланса */
-        .tim-packages-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin: 12px 0; }
+        .stars-package:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 215, 0, 0.15);
+        }
+        .stars-icon {
+            font-size: 20px;
+            margin-bottom: 3px;
+        }
+        .stars-count {
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--premium);
+        }
+        .tim-packages-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin: 12px 0;
+        }
         .tim-package-compact {
-            background: rgba(0, 200, 255, 0.1); border: 1px solid var(--tim-blue); border-radius: 8px;
-            padding: 10px; cursor: pointer; transition: all 0.2s; text-align: center;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: rgba(0, 200, 255, 0.1);
+            border: 1px solid var(--tim-blue);
+            border-radius: 8px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
-        .tim-package-compact:hover { transform: translateY(-2px); background: rgba(0, 200, 255, 0.15); }
-        .tim-cost { font-size: 16px; font-weight: bold; color: var(--premium); display: flex; align-items: center; justify-content: center; gap: 4px; margin-bottom: 4px; }
-        .tim-reward { font-size: 14px; font-weight: bold; color: var(--tim-blue); margin-bottom: 2px; }
-        .tim-benefit { font-size: 10px; color: var(--text-light); }
+        .tim-package-compact:hover {
+            transform: translateY(-2px);
+            background: rgba(0, 200, 255, 0.15);
+        }
+        .tim-cost {
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--premium);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            margin-bottom: 4px;
+        }
+        .tim-reward {
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--tim-blue);
+            margin-bottom: 2px;
+        }
+        .tim-benefit {
+            font-size: 10px;
+            color: var(--text-light);
+        }
         .section-title {
-            color: var(--tim-blue); font-weight: bold; font-size: 1.1rem; margin-bottom: 12px;
-            text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px;
+            color: var(--tim-blue);
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
-        /* Дополнительные стили для друзей - оптимизированные */
         .bonus-info {
-            background: rgba(102, 187, 106, 0.1); border: 1px solid var(--success); border-radius: 8px;
-            padding: 10px; margin: 8px 0; text-align: left;
+            background: rgba(102, 187, 106, 0.1);
+            border: 1px solid var(--success);
+            border-radius: 8px;
+            padding: 10px;
+            margin: 8px 0;
+            text-align: left;
         }
-        .bonus-list { margin: 8px 0; padding-left: 18px; }
-        .bonus-list li { margin: 3px 0; font-size: 11px; color: var(--text-light); line-height: 1.3; }
+        .bonus-list {
+            margin: 8px 0;
+            padding-left: 18px;
+        }
+        .bonus-list li {
+            margin: 3px 0;
+            font-size: 11px;
+            color: var(--text-light);
+            line-height: 1.3;
+        }
         .referral-stats {
-            display: flex; justify-content: space-between; margin: 12px 0;
-            background: rgba(0, 200, 255, 0.1); padding: 8px; border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            margin: 12px 0;
+            background: rgba(0, 200, 255, 0.1);
+            padding: 8px;
+            border-radius: 8px;
         }
-        .stat-item { text-align: center; flex: 1; }
-        .stat-value { font-size: 16px; font-weight: bold; color: var(--tim-blue); }
-        .stat-label { font-size: 10px; color: var(--text-light); margin-top: 2px; }
-        /* Стиль для офлайн заработка */
+        .stat-item {
+            text-align: center;
+            flex: 1;
+        }
+        .stat-value {
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--tim-blue);
+        }
+        .stat-label {
+            font-size: 10px;
+            color: var(--text-light);
+            margin-top: 2px;
+        }
         .offline-earnings {
-            background: rgba(0, 200, 255, 0.1); border: 1px solid var(--tim-blue); border-radius: 10px;
-            padding: 10px; margin: 8px 0; text-align: center; cursor: pointer;
+            background: rgba(0, 200, 255, 0.1);
+            border: 1px solid var(--tim-blue);
+            border-radius: 10px;
+            padding: 10px;
+            margin: 8px 0;
+            text-align: center;
+            cursor: pointer;
         }
-        .offline-earnings .card-title { color: var(--tim-blue); font-weight: bold; font-size: 14px; }
-        .offline-earnings .card-desc { color: var(--text-light); font-size: 11px; }
-        /* Компактные стили для страницы друзей */
-        .compact-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 15px 0; }
+        .offline-earnings .card-title {
+            color: var(--tim-blue);
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .offline-earnings .card-desc {
+            color: var(--text-light);
+            font-size: 11px;
+        }
+        .compact-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
         .compact-card {
-            background: var(--dark-light); padding: 12px; border-radius: 8px; cursor: pointer;
-            border: 2px solid var(--tim-blue); text-align: center; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; min-height: 90px;
+            background: var(--dark-light);
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 2px solid var(--tim-blue);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 90px;
         }
-        .compact-card .card-title { color: var(--tim-blue); font-weight: bold; font-size: 13px; margin-bottom: 4px; }
-        .compact-card .card-desc { color: var(--text-light); font-size: 10px; line-height: 1.2; }
+        .compact-card .card-title {
+            color: var(--tim-blue);
+            font-weight: bold;
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+        .compact-card .card-desc {
+            color: var(--text-light);
+            font-size: 10px;
+            line-height: 1.2;
+        }
+        @keyframes purchaseEffect {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .purchase-effect {
+            animation: purchaseEffect 0.5s ease;
+        }
     </style>
 </head>
 <body>
@@ -433,7 +912,7 @@
                     
                     <div class="stars-section">
                         <div class="stars-balance">
-                            <div class="balance-amount">⭐ {{ telegramStars }}</div>
+                            <div class="balance-amount" :class="{'purchase-effect': starsPurchaseEffect}">⭐ {{ telegramStars }}</div>
                             <div class="balance-label">Ваш баланс звезд</div>
                         </div>
                     </div>
@@ -444,21 +923,25 @@
                             <span>Пополнить баланс</span>
                         </div>
                         <div class="stars-grid">
-                            <div class="stars-package" @click="buyStars(100)">
+                            <div class="stars-package" @click="openTelegramStarsPurchase(100)" :class="{'purchase-effect': currentPurchase === 'stars_100'}">
                                 <div class="stars-icon">⭐</div>
-                                <div class="stars-count">100</div>
+                                <div class="stars-count">100 Stars</div>
+                                <div class="tim-benefit">~1.1$</div>
                             </div>
-                            <div class="stars-package" @click="buyStars(500)">
+                            <div class="stars-package" @click="openTelegramStarsPurchase(500)" :class="{'purchase-effect': currentPurchase === 'stars_500'}">
                                 <div class="stars-icon">⭐</div>
-                                <div class="stars-count">500</div>
+                                <div class="stars-count">500 Stars</div>
+                                <div class="tim-benefit">~5.5$</div>
                             </div>
-                            <div class="stars-package" @click="buyStars(1000)">
+                            <div class="stars-package" @click="openTelegramStarsPurchase(1000)" :class="{'purchase-effect': currentPurchase === 'stars_1000'}">
                                 <div class="stars-icon">⭐</div>
-                                <div class="stars-count">1000</div>
+                                <div class="stars-count">1000 Stars</div>
+                                <div class="tim-benefit">~11$</div>
                             </div>
-                            <div class="stars-package" @click="buyStars(5000)">
+                            <div class="stars-package" @click="openTelegramStarsPurchase(5000)" :class="{'purchase-effect': currentPurchase === 'stars_5000'}">
                                 <div class="stars-icon">⭐</div>
-                                <div class="stars-count">5000</div>
+                                <div class="stars-count">5000 Stars</div>
+                                <div class="tim-benefit">~55$</div>
                             </div>
                         </div>
                     </div>
@@ -469,7 +952,7 @@
                             <span>Купить TIM за звезды</span>
                         </div>
                         <div class="tim-packages-grid">
-                            <div class="tim-package-compact" @click="buyTimForStars(50, 1000000)">
+                            <div class="tim-package-compact" @click="buyTimForStars(50, 1000000)" :class="{'purchase-effect': currentPurchase === 'tim_50'}">
                                 <div class="tim-cost">
                                     <span>⭐</span>
                                     <span>50</span>
@@ -477,7 +960,7 @@
                                 <div class="tim-reward">1,000,000 TIM</div>
                                 <div class="tim-benefit">Базовый пакет</div>
                             </div>
-                            <div class="tim-package-compact" @click="buyTimForStars(100, 3000000)">
+                            <div class="tim-package-compact" @click="buyTimForStars(100, 3000000)" :class="{'purchase-effect': currentPurchase === 'tim_100'}">
                                 <div class="tim-cost">
                                     <span>⭐</span>
                                     <span>100</span>
@@ -485,7 +968,7 @@
                                 <div class="tim-reward">3,000,000 TIM</div>
                                 <div class="tim-benefit">+200% выгоды</div>
                             </div>
-                            <div class="tim-package-compact" @click="buyTimForStars(200, 8000000)">
+                            <div class="tim-package-compact" @click="buyTimForStars(200, 8000000)" :class="{'purchase-effect': currentPurchase === 'tim_200'}">
                                 <div class="tim-cost">
                                     <span>⭐</span>
                                     <span>200</span>
@@ -493,7 +976,7 @@
                                 <div class="tim-reward">8,000,000 TIM</div>
                                 <div class="tim-benefit">+300% выгоды</div>
                             </div>
-                            <div class="tim-package-compact" @click="buyTimForStars(500, 25000000)">
+                            <div class="tim-package-compact" @click="buyTimForStars(500, 25000000)" :class="{'purchase-effect': currentPurchase === 'tim_500'}">
                                 <div class="tim-cost">
                                     <span>⭐</span>
                                     <span>500</span>
@@ -502,6 +985,60 @@
                                 <div class="tim-benefit">+400% выгоды</div>
                             </div>
                         </div>
+                    </div>
+
+                    <div class="stars-section">
+                        <div class="section-title">
+                            <span>⚡</span>
+                            <span>Бустеры за звезды</span>
+                        </div>
+                        <div class="tim-packages-grid">
+                            <div class="tim-package-compact" @click="buyBooster('x2_1h', 25)" :class="{'purchase-effect': currentPurchase === 'booster_x2_1h'}">
+                                <div class="tim-cost">
+                                    <span>⭐</span>
+                                    <span>25</span>
+                                </div>
+                                <div class="tim-reward">x2 доход на 1 час</div>
+                                <div class="tim-benefit">Множитель</div>
+                            </div>
+                            <div class="tim-package-compact" @click="buyBooster('x3_30m', 40)" :class="{'purchase-effect': currentPurchase === 'booster_x3_30m'}">
+                                <div class="tim-cost">
+                                    <span>⭐</span>
+                                    <span>40</span>
+                                </div>
+                                <div class="tim-reward">x3 доход на 30 мин</div>
+                                <div class="tim-benefit">Мощный бустер</div>
+                            </div>
+                            <div class="tim-package-compact" @click="buyBooster('auto_1h', 20)" :class="{'purchase-effect': currentPurchase === 'booster_auto_1h'}">
+                                <div class="tim-cost">
+                                    <span>⭐</span>
+                                    <span>20</span>
+                                </div>
+                                <div class="tim-reward">Автокликер 1 час</div>
+                                <div class="tim-benefit">+100 кликов/сек</div>
+                            </div>
+                            <div class="tim-package-compact" @click="buyBooster('crypto_2h', 60)" :class="{'purchase-effect': currentPurchase === 'booster_crypto_2h'}">
+                                <div class="tim-cost">
+                                    <span>⭐</span>
+                                    <span>60</span>
+                                </div>
+                                <div class="tim-reward">Крипто-майнер 2ч</div>
+                                <div class="tim-benefit">+500% шанс MRT</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stars-section" v-if="isTelegramWebApp">
+                        <div class="section-title">
+                            <span>🛒</span>
+                            <span>Прямая покупка</span>
+                        </div>
+                        <button class="btn btn-premium" @click="openTelegramStarsPurchase(100)">
+                            ⭐ Купить 100 Stars
+                        </button>
+                        <button class="btn btn-premium" style="margin-top: 10px;" @click="openTelegramStarsPurchase(500)">
+                            ⭐⭐ Купить 500 Stars
+                        </button>
                     </div>
                 </div>
             </div>
@@ -567,7 +1104,7 @@
                 </div>
             </div>
 
-            <!-- Вкладки в новом порядке: друзья → улучшения → кликер → реклама → токены -->
+            <!-- Вкладки -->
             <div class="bottom-tabs">
                 <div class="bottom-tab" :class="{active: activePage === 'friends'}" @click="setPage('friends')" title="Друзья">👥</div>
                 <div class="bottom-tab" :class="{active: activePage === 'upgrades'}" @click="setPage('upgrades')" title="Улучшения">⚡</div>
@@ -638,6 +1175,13 @@
                     { id: 3, name: 'Множитель', description: 'x1.5 доход от кликов', cost: 25000, level: 0 }
                 ]);
                 
+                // Telegram Stars состояния
+                const isTelegramWebApp = ref(false);
+                const tg = ref(null);
+                const starsPurchaseEffect = ref(false);
+                const currentPurchase = ref('');
+                const activeBoosters = ref([]);
+                
                 // Состояния для автосохранения
                 const lastSaveTime = ref(Date.now());
                 const offlineEarnings = ref(0);
@@ -657,7 +1201,12 @@
                 });
                 
                 const currentCryptoChance = computed(() => {
-                    return cryptoMinerChance.value * (1 + cryptoMinerLevel.value * 0.5);
+                    let chance = cryptoMinerChance.value * (1 + cryptoMinerLevel.value * 0.5);
+                    const cryptoBooster = activeBoosters.value.find(b => b.type === 'crypto_2h');
+                    if (cryptoBooster && cryptoBooster.active) {
+                        chance *= 5;
+                    }
+                    return chance;
                 });
                 
                 const cryptoMinerTimeLeft = computed(() => {
@@ -701,17 +1250,171 @@
                     setTimeout(() => adEffects.value.shift(), 2000);
                 }
                 
+                // Telegram Stars функции
+                function initTelegramStars() {
+                    if (window.Telegram?.WebApp) {
+                        tg.value = window.Telegram.WebApp;
+                        isTelegramWebApp.value = true;
+                        
+                        tg.value.ready();
+                        tg.value.expand();
+                        
+                        // Получаем данные пользователя
+                        const user = tg.value.initDataUnsafe?.user;
+                        if (user) {
+                            const telegramId = `tg_${user.id}`;
+                            const existingId = localStorage.getItem('tim_user_id');
+                            
+                            if (!existingId || !existingId.includes('tg_')) {
+                                userId.value = telegramId;
+                                localStorage.setItem('tim_user_id', telegramId);
+                            }
+                            
+                            if (!hasShownWelcome.value) {
+                                setTimeout(() => {
+                                    showNotify(`👋 Привет, ${user.first_name || 'Игрок'}!`, 'premium');
+                                }, 1000);
+                            }
+                        }
+                    }
+                }
+                
+                // Открытие покупки Telegram Stars
+                function openTelegramStarsPurchase(starsAmount) {
+                    if (!isTelegramWebApp.value || !tg.value) {
+                        showNotify('Для покупки Stars откройте игру через Telegram бота', 'error');
+                        return;
+                    }
+                    
+                    currentPurchase.value = `stars_${starsAmount}`;
+                    
+                    // Создаем платёжный инвойс
+                    const invoice = {
+                        title: `Купить ${starsAmount} Telegram Stars`,
+                        description: 'Пополнение баланса в игре Tim Clicker',
+                        currency: 'XTR',
+                        prices: [{ label: `${starsAmount} Stars`, amount: starsAmount * 100 }],
+                        payload: JSON.stringify({
+                            type: 'stars_purchase',
+                            stars: starsAmount,
+                            userId: userId.value,
+                            timestamp: Date.now()
+                        })
+                    };
+                    
+                    // Открываем платёжное окно
+                    tg.value.openInvoice(invoice, (status) => {
+                        if (status === 'paid') {
+                            telegramStars.value += starsAmount;
+                            starsPurchaseEffect.value = true;
+                            showNotify(`🎉 Куплено ${starsAmount} Telegram Stars!`, 'premium');
+                            saveGame();
+                            
+                            setTimeout(() => {
+                                starsPurchaseEffect.value = false;
+                                currentPurchase.value = '';
+                            }, 500);
+                        } else if (status === 'cancelled' || status === 'failed') {
+                            showNotify('Покупка отменена', 'error');
+                            currentPurchase.value = '';
+                        }
+                    });
+                    
+                    setTimeout(() => {
+                        currentPurchase.value = '';
+                    }, 1000);
+                }
+                
+                // Покупка TIM за звезды
+                function buyTimForStars(starsCost, timAmount) {
+                    if (telegramStars.value < starsCost) {
+                        showNotify('Недостаточно звезд!', 'error');
+                        return;
+                    }
+                    
+                    currentPurchase.value = `tim_${starsCost}`;
+                    telegramStars.value -= starsCost;
+                    coins.value += timAmount;
+                    
+                    showNotify(`Куплено ${formatNumber(timAmount)} TIM за ${starsCost} звезд!`, 'premium');
+                    saveGame();
+                    
+                    setTimeout(() => {
+                        currentPurchase.value = '';
+                    }, 500);
+                }
+                
+                // Покупка бустеров за звезды
+                function buyBooster(type, starsCost) {
+                    if (telegramStars.value < starsCost) {
+                        showNotify('Недостаточно звезд!', 'error');
+                        return;
+                    }
+                    
+                    currentPurchase.value = `booster_${type}`;
+                    telegramStars.value -= starsCost;
+                    
+                    let duration = 0;
+                    let name = '';
+                    
+                    switch(type) {
+                        case 'x2_1h':
+                            duration = 60 * 60 * 1000;
+                            name = 'x2 доход на 1 час';
+                            activeBoosters.value.push({
+                                type: 'x2_1h',
+                                endTime: Date.now() + duration,
+                                active: true,
+                                multiplier: 2
+                            });
+                            break;
+                        case 'x3_30m':
+                            duration = 30 * 60 * 1000;
+                            name = 'x3 доход на 30 минут';
+                            activeBoosters.value.push({
+                                type: 'x3_30m',
+                                endTime: Date.now() + duration,
+                                active: true,
+                                multiplier: 3
+                            });
+                            break;
+                        case 'auto_1h':
+                            duration = 60 * 60 * 1000;
+                            name = 'Автокликер на 1 час';
+                            activeBoosters.value.push({
+                                type: 'auto_1h',
+                                endTime: Date.now() + duration,
+                                active: true,
+                                autoClickRate: 100
+                            });
+                            break;
+                        case 'crypto_2h':
+                            duration = 2 * 60 * 60 * 1000;
+                            name = 'Крипто-майнер x5 шанс на 2 часа';
+                            activeBoosters.value.push({
+                                type: 'crypto_2h',
+                                endTime: Date.now() + duration,
+                                active: true
+                            });
+                            break;
+                    }
+                    
+                    showNotify(`Активирован бустер "${name}"!`, 'premium');
+                    saveGame();
+                    
+                    setTimeout(() => {
+                        currentPurchase.value = '';
+                    }, 500);
+                }
+                
                 // Расчет офлайн заработка
                 function calculateOfflineEarnings() {
                     const now = Date.now();
                     const timeDiff = now - lastSaveTime.value;
-                    
                     const maxOfflineTime = 24 * 60 * 60 * 1000;
                     const effectiveTime = Math.min(timeDiff, maxOfflineTime);
-                    
                     const minutesOffline = effectiveTime / (1000 * 60);
                     const earnings = Math.floor(autoClickers.value * minutesOffline);
-                    
                     const maxOfflineEarnings = 1000000;
                     return Math.min(earnings, maxOfflineEarnings);
                 }
@@ -729,18 +1432,34 @@
                 // Основные игровые функции
                 function mine() {
                     const now = Date.now();
-                    const clickCooldown = 550;
+                    const clickCooldown = 350; // ИСПРАВЛЕНО: 550 → 350
                     
                     if (now - lastClickTime.value < clickCooldown) return;
                     
                     lastClickTime.value = now;
                     
-                    let earned = profitPerTap.value;
+                    // Применяем множители от бустеров
+                    let multiplier = 1;
+                    const incomeBoosters = activeBoosters.value.filter(b => b.multiplier);
+                    incomeBoosters.forEach(booster => {
+                        if (booster.active && now < booster.endTime) {
+                            multiplier *= booster.multiplier;
+                        }
+                    });
+                    
+                    let earned = profitPerTap.value * multiplier;
                     coins.value += earned;
                     
                     if (friends.value.length > 0) {
-                        const passiveEarned = totalPassiveEarnings.value;
+                        const passiveEarned = totalPassiveEarnings.value * multiplier;
                         coins.value += passiveEarned;
+                    }
+                    
+                    // Автокликер от бустера
+                    const autoBooster = activeBoosters.value.find(b => b.type === 'auto_1h');
+                    if (autoBooster && autoBooster.active && now < autoBooster.endTime) {
+                        const autoClicks = Math.floor(autoBooster.autoClickRate / 60);
+                        coins.value += earned * autoClicks;
                     }
                     
                     if (cryptoMinerActive.value && cryptoMinerTimeLeft.value > 0) {
@@ -823,6 +1542,17 @@
                             clearInterval(interval);
                             
                             let reward = ad.reward;
+                            
+                            // Применяем множитель от бустера
+                            let multiplier = 1;
+                            const incomeBoosters = activeBoosters.value.filter(b => b.multiplier);
+                            incomeBoosters.forEach(booster => {
+                                if (booster.active && Date.now() < booster.endTime) {
+                                    multiplier *= booster.multiplier;
+                                }
+                            });
+                            
+                            reward *= multiplier;
                             
                             ad.lastWatch = Date.now();
                             
@@ -962,26 +1692,6 @@
                         .catch(() => showNotify('Ошибка копирования', 'error'));
                 }
                 
-                // Функции Telegram Stars
-                function buyStars(amount) {
-                    telegramStars.value += amount;
-                    showNotify(`⚡ Куплено ${amount} Telegram Stars (демо)!`, 'premium');
-                    saveGame();
-                }
-                
-                function buyTimForStars(starsCost, timAmount) {
-                    if (telegramStars.value < starsCost) {
-                        showNotify('Недостаточно звезд!', 'error');
-                        return;
-                    }
-                    
-                    telegramStars.value -= starsCost;
-                    coins.value += timAmount;
-                    
-                    showNotify(`Куплено ${formatNumber(timAmount)} TIM за ${starsCost} звезд!`, 'premium');
-                    saveGame();
-                }
-                
                 // Управление страницами
                 function setPage(page) {
                     activePage.value = page;
@@ -1000,11 +1710,11 @@
                 function saveGame() {
                     try {
                         const gameData = {
-                            coins: coins.value, 
-                            profitPerTap: profitPerTap.value, 
+                            coins: coins.value,
+                            profitPerTap: profitPerTap.value,
                             autoClickers: autoClickers.value,
-                            realTokens: realTokens.value, 
-                            telegramStars: telegramStars.value, 
+                            realTokens: realTokens.value,
+                            telegramStars: telegramStars.value,
                             friends: friends.value,
                             upgrades: upgrades.value.map(upgrade => ({
                                 id: upgrade.id,
@@ -1014,7 +1724,7 @@
                                 level: upgrade.level
                             })),
                             cryptoMinerLevel: cryptoMinerLevel.value,
-                            cryptoMinerActive: cryptoMinerActive.value, 
+                            cryptoMinerActive: cryptoMinerActive.value,
                             cryptoMinerEndTime: cryptoMinerEndTime.value,
                             ads: {
                                 daily: { ...ads.value.daily },
@@ -1022,13 +1732,14 @@
                                 big: { ...ads.value.big },
                                 instant: { ...ads.value.instant }
                             },
-                            totalAdEarnings: totalAdEarnings.value, 
+                            totalAdEarnings: totalAdEarnings.value,
                             totalReferralEarnings: totalReferralEarnings.value,
                             lastSaveTime: Date.now(),
                             userId: userId.value,
                             saveCount: saveCount.value + 1,
                             polygonWalletAddress: polygonWalletAddress.value,
-                            hasShownWelcome: hasShownWelcome.value
+                            hasShownWelcome: hasShownWelcome.value,
+                            activeBoosters: activeBoosters.value
                         };
                         
                         localStorage.setItem('tim_clicker_save', JSON.stringify(gameData));
@@ -1044,6 +1755,8 @@
                 
                 function loadGame() {
                     try {
+                        initTelegramStars();
+                        
                         // Генерируем ID пользователя
                         userId.value = localStorage.getItem('tim_user_id');
                         if (!userId.value) {
@@ -1063,7 +1776,6 @@
                             realTokens.value = gameData.realTokens || 0;
                             telegramStars.value = gameData.telegramStars || 0;
                             
-                            // ВАЖНОЕ ИСПРАВЛЕНИЕ: Проверяем, чтобы пользователь не был в своем списке друзей
                             friends.value = (gameData.friends || []).filter(friend => {
                                 return friend.id !== userId.value && friend.userId !== userId.value;
                             });
@@ -1097,6 +1809,13 @@
                             
                             polygonWalletAddress.value = gameData.polygonWalletAddress || 
                                                          localStorage.getItem('tim_wallet_address') || '';
+                            
+                            activeBoosters.value = gameData.activeBoosters || [];
+                            
+                            // Очищаем истекшие бустеры
+                            activeBoosters.value = activeBoosters.value.filter(booster => {
+                                return booster.endTime > now;
+                            });
                             
                             if (cryptoMinerActive.value && now > cryptoMinerEndTime.value) {
                                 cryptoMinerActive.value = false;
@@ -1179,19 +1898,19 @@
                         localStorage.setItem('tim_user_id', userId.value);
                     }
                     
-                    coins.value = 0; 
-                    profitPerTap.value = 1; 
-                    autoClickers.value = 0; 
+                    coins.value = 0;
+                    profitPerTap.value = 1;
+                    autoClickers.value = 0;
                     realTokens.value = 0;
-                    telegramStars.value = 0; 
-                    friends.value = []; // ПУСТОЙ список друзей
+                    telegramStars.value = 0;
+                    friends.value = [];
                     upgrades.value = [
                         { id: 1, name: 'Усилитель клика', description: '+0.5 TIM за клик', cost: 1000, level: 0 },
                         { id: 2, name: 'Автомайнер', description: '+5 TIM в минуту', cost: 5000, level: 0 },
                         { id: 3, name: 'Множитель', description: 'x1.5 доход от кликов', cost: 25000, level: 0 }
                     ];
-                    cryptoMinerLevel.value = 0; 
-                    cryptoMinerActive.value = false; 
+                    cryptoMinerLevel.value = 0;
+                    cryptoMinerActive.value = false;
                     cryptoMinerEndTime.value = 0;
                     ads.value = {
                         daily: { available: true, reward: 50000, cooldown: 0, watchedToday: 0, lastWatch: 0 },
@@ -1199,35 +1918,47 @@
                         big: { available: true, reward: 200000, lastWatch: 0 },
                         instant: { available: true, reward: 5000, lastWatch: 0 }
                     };
-                    totalAdEarnings.value = 0; 
+                    totalAdEarnings.value = 0;
                     totalReferralEarnings.value = 0;
                     offlineEarnings.value = 0;
                     lastSaveTime.value = Date.now();
                     activePage.value = 'click';
                     saveCount.value = 0;
+                    activeBoosters.value = [];
                     
                     polygonWalletAddress.value = localStorage.getItem('tim_wallet_address') || '';
                 }
                 
                 // Автоматические процессы
                 function startGameLoops() {
-                    setInterval(() => { 
+                    // Автокликер
+                    setInterval(() => {
                         if (autoClickers.value > 0) {
-                            coins.value += autoClickers.value; 
+                            coins.value += autoClickers.value;
                             saveGame();
                         }
                     }, 60000);
                     
+                    // Автосохранение
                     setInterval(() => {
                         saveGame();
                     }, 30000);
                     
+                    // Проверка бустеров и крипто-майнера
                     setInterval(() => {
+                        const now = Date.now();
+                        
                         if (cryptoMinerActive.value && cryptoMinerTimeLeft.value <= 0) {
                             cryptoMinerActive.value = false;
                         }
+                        
+                        // Проверка истекших бустеров
+                        activeBoosters.value = activeBoosters.value.filter(booster => {
+                            return booster.endTime > now;
+                        });
                     }, 1000);
                     
+                    // Обновление таймеров рекламы
                     setInterval(() => {
                         if (ads.value.daily.cooldown > 0) {
                             ads.value.daily.cooldown--;
@@ -1243,34 +1974,32 @@
                             }
                         }
                     }, 1000);
+                    
+                    // Автоклик от бустера
+                    setInterval(() => {
+                        const now = Date.now();
+                        const autoBooster = activeBoosters.value.find(b => b.type === 'auto_1h');
+                        if (autoBooster && autoBooster.active && now < autoBooster.endTime) {
+                            const clicksPerSecond = autoBooster.autoClickRate || 100;
+                            const earned = profitPerTap.value * clicksPerSecond / 10;
+                            coins.value += earned;
+                        }
+                    }, 100);
                 }
                 
                 // Инициализация при загрузке
                 onMounted(() => {
                     document.addEventListener('gesturestart', e => e.preventDefault());
-                    document.addEventListener('touchmove', e => { if (e.scale !== 1) e.preventDefault(); }, { passive: false });
-                    
-                    if (window.Telegram?.WebApp) {
-                        const tg = window.Telegram.WebApp;
-                        tg.ready(); 
-                        tg.expand();
-                        const user = tg.initDataUnsafe?.user;
-                        if (user) {
-                            const telegramId = `tg_${user.id}`;
-                            const existingId = localStorage.getItem('tim_user_id');
-                            
-                            if (!existingId || !existingId.includes('tg_')) {
-                                userId.value = telegramId;
-                                localStorage.setItem('tim_user_id', telegramId);
-                            }
-                        }
-                    }
+                    document.addEventListener('touchmove', e => {
+                        if (e.scale !== 1) e.preventDefault();
+                    }, { passive: false });
                     
                     loadGame();
-                    
                     startGameLoops();
                     
-                    setTimeout(() => isReady.value = true, 800);
+                    setTimeout(() => {
+                        isReady.value = true;
+                    }, 800);
                     
                     window.addEventListener('beforeunload', () => {
                         saveGame();
@@ -1295,7 +2024,8 @@
                     polygonWalletAddress, polygonWalletInput, convertAmount, withdrawAmount, friends, userId,
                     telegramStars, cryptoMinerLevel, cryptoMinerActive, cryptoEffects, ads, adWatching,
                     adEffects, notification, upgrades, totalReferralEarnings, totalPassiveEarnings,
-                    totalAdEarnings, offlineEarnings,
+                    totalAdEarnings, offlineEarnings, starsPurchaseEffect, currentPurchase,
+                    isTelegramWebApp, activeBoosters,
                     
                     // Вычисляемые свойства
                     isValidWallet, cryptoMinerTimeLeft, cryptoMinerCost, currentCryptoChance,
@@ -1303,8 +2033,8 @@
                     // Функции
                     formatNumber, formatTime, mine, buyUpgrade, activateCryptoMiner, watchAd, generateInvite,
                     copyReferral, claimFriendBonus, convertTokens, withdrawTokens, saveWallet,
-                    copyWallet, buyStars, buyTimForStars, setPage, openFullscreen, closeFullscreen, showNotify,
-                    claimOfflineEarnings
+                    copyWallet, buyTimForStars, buyBooster, openTelegramStarsPurchase,
+                    setPage, openFullscreen, closeFullscreen, showNotify, claimOfflineEarnings
                 };
             }
         }).mount('#app');
